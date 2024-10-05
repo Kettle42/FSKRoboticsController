@@ -43,7 +43,7 @@ public class RC2Op extends LinearOpMode
                 double lx = gamepad1.left_stick_x;
                 double ly = gamepad1.left_stick_y;
                 double rx = gamepad1.right_stick_x;
-                double power = 0.5;
+                double power = 1;
 
                 backleft.setPower((ly - rx + lx) * power);
                 backright.setPower((ly +  rx - lx) * power);
@@ -52,11 +52,11 @@ public class RC2Op extends LinearOpMode
 
                 if (gamepad1.dpad_up)
                 {
-                    shoulder.setPower(0.5);
+                    shoulder.setPower(-1);
                 }
                 else if (gamepad1.dpad_down)
                 {
-                    shoulder.setPower(-0.5);
+                    shoulder.setPower(1);
                 }
                 else
                 {
@@ -79,6 +79,11 @@ public class RC2Op extends LinearOpMode
                 for (DcMotorEx wheel : wheels)
                 {
                     telemetry.addData(wheel.getDeviceName(), wheel.getPower());
+                }
+
+                if (gamepad1.right_trigger > 0.2)
+                {
+                    backleft.setPower(1);
                 }
 
                 telemetry.update();
