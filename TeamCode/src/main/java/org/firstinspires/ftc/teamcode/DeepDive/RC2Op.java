@@ -16,6 +16,7 @@ public class RC2Op extends LinearOpMode
     private DcMotorEx frontright;
     private DcMotorEx shoulder;
     private DcMotorEx tricep;
+    private DcMotorEx[] wheels;
 
     @Override
     public void runOpMode()
@@ -28,6 +29,8 @@ public class RC2Op extends LinearOpMode
         shoulder = hardwareMap.get(DcMotorEx.class, "shoulder");
         tricep = hardwareMap.get(DcMotorEx.class, "tricep");
 
+        wheels = new DcMotorEx[] { backleft, backright, frontleft, frontright };
+
         frontright.setDirection(DcMotorSimple.Direction.REVERSE);
         backright.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -38,14 +41,47 @@ public class RC2Op extends LinearOpMode
             {
                 // put your loop blocks here
                 double lx = gamepad1.left_stick_x;
-                double ly = gamepad1.left_stick_x;
-                double rx = gamepad2.right_stick_x;
+                double ly = gamepad1.left_stick_y;
+                double rx = gamepad1.right_stick_x;
                 double power = 0.5;
 
-                backleft.setPower((ly + rx + lx) * power);
-                backright.setPower((ly -  rx - lx) * power);
-                frontleft.setPower((ly + rx - lx) * power);
-                frontright.setPower((ly - rx + lx) * power);
+                backleft.setPower((ly - rx + lx) * power);
+                backright.setPower((ly +  rx - lx) * power);
+                frontleft.setPower((ly - rx - lx) * power);
+                frontright.setPower((ly + rx + lx) * power);
+
+                if (gamepad1.dpad_up)
+                {
+                    shoulder.setPower(0.5);
+                }
+                else if (gamepad1.dpad_down)
+                {
+                    shoulder.setPower(-0.5);
+                }
+                else
+                {
+                    shoulder.setPower(0);
+                }
+
+                if (gamepad1.dpad_right)
+                {
+                    tricep.setPower(-1);
+                }
+                else if (gamepad1.dpad_left)
+                {
+                    tricep.setPower(1);
+                }
+                else
+                {
+                    tricep.setPower(0);
+                }
+
+                for (DcMotorEx wheel : wheels)
+                {
+                    telemetry.addData(wheel.getDeviceName(), wheel.getPower());
+                }
+
+                telemetry.update();
             }
         }
     }
