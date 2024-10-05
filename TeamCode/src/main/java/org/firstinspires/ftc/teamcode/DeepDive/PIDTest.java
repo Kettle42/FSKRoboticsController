@@ -66,6 +66,7 @@ public class PIDTest extends LinearOpMode
         {
             while (opModeIsActive())
             {
+                telemetry.clear();
 //              double x = Math.atan2(gamepad1.left_stick_y, gamepad1.left_stick_x);
                 double x = 0;
                 double l = 0;
