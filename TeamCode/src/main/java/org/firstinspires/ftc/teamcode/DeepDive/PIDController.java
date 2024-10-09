@@ -6,7 +6,7 @@ import java.util.*;
 
 public class PIDController 
 {
-    private double integralSum = 0;
+    public double integralSum = 0;
     public double kp = 1;
     public double ki = 1;
     public double kd = 1;
@@ -66,7 +66,8 @@ public class PIDController
     public double getError(){
         return this.lastError;
     }
-    
+
+    @Override
     public String toString(){
         return "Proportional: " + this.kp + " Integral: " + this.ki + " Derivative: " + this.kd;
     }

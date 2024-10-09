@@ -40,6 +40,11 @@ public class Vision {
         return detections.toArray(new AprilTagDetection[detections.size()]);
     }
 
+    public AprilTagDetection[] getLastDetections()
+    {
+        return detections.toArray(new AprilTagDetection[detections.size()]);
+    }
+
     public AprilTagDetection tryGetTag(int id)
     {
         detect();
