@@ -78,7 +78,7 @@ public class RC2Op extends LinearOpMode
 
                 for (DcMotorEx wheel : wheels)
                 {
-                    telemetry.addData(wheel.getDeviceName(), wheel.getPower());
+                    telemetry.addData(wheel.getConnectionInfo(), wheel.getPower());
                 }
 
                 if (gamepad1.right_trigger > 0.2)
