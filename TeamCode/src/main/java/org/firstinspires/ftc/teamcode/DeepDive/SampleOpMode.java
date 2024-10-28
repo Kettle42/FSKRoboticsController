@@ -4,7 +4,15 @@ import java.util.*;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 // import org.firstinspires.ftc.teamcode.DeepDive.XyhVector;
 
@@ -12,78 +20,73 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class SampleOpMode extends LinearOpMode
 {
-    public enum OdometryPod
-    {
-        Left,
-        Center,
-        Right
-    }
-
     private DcMotor frontright;
     private DcMotor frontleft;
     private DcMotor backright;
     private DcMotor backleft;
 
-    private DcMotor imu;
-    private DcMotor auxPod;
-    private DcMotor leftPod;
-    private DcMotor rightPod;
-
-    private int oldIMU;
-    private int oldRight;
-    private int oldLeft;
-    private int oldAux;
-
-    private int currentIMU = 0;
-    private int currentRight = 0;
-    private int currentLeft = 0;
-    private int currentAux = 0;
-
-    private static double Ry = -14.3;
-    private static double Ly = 14.3;
-    private static double Bx = 14;
-    private ArrayList<Double> vals = new ArrayList<Double>();
-    double sum = 0.0;
+    GoBildaPinpointDriver odo;
 
     private static final float deadzone = 0.25f;
 
-    private static final double c_theta = 2*Math.PI*48 / 40000;
-    private static final double c_linear = 1 / 150.0;
+    double oldTime = 0;
+    double xOffset = 152; //319.919
+    double yOffset = -140; //-257.292
 
-    private final XyhVector pos = new XyhVector(0, 0, 0);
+    double cameraOffset = 187.05;
+
+    ElapsedTime xPosTimer;
+    ElapsedTime yPosTimer;
+    ElapsedTime hPosTimer;
+
+    PIDController xPosPID;
+    PIDController yPosPID;
+    PIDController hPosPID;
+
+    Vision vision;
+
+    static Pose2D[] tagXYH = new Pose2D[] { new Pose2D(DistanceUnit.INCH, -72.0,  48.0, AngleUnit.DEGREES, 180.0),
+                                            new Pose2D(DistanceUnit.INCH,   0.0,  72.0, AngleUnit.DEGREES,  90.0),
+                                            new Pose2D(DistanceUnit.INCH,  72.0,  48.0, AngleUnit.DEGREES,   0.0),
+                                            new Pose2D(DistanceUnit.INCH,  72.0, -48.0, AngleUnit.DEGREES,   0.0),
+                                            new Pose2D(DistanceUnit.INCH,   0.0, -72.0, AngleUnit.DEGREES, 270.0),
+                                            new Pose2D(DistanceUnit.INCH, -72.0, -48.0, AngleUnit.DEGREES, 180.0)};
 
     public void runOpMode()
     {
         // init
-        frontright = hardwareMap.get(DcMotor.class, "frontright");
-        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
-        backright = hardwareMap.get(DcMotor.class, "backright");
-        backleft = hardwareMap.get(DcMotor.class, "backleft");
+        frontright = hardwareMap.get(DcMotorEx.class, "frontright");
+        frontleft = hardwareMap.get(DcMotorEx.class, "frontleft");
+        backright = hardwareMap.get(DcMotorEx.class, "backright");
+        backleft = hardwareMap.get(DcMotorEx.class, "backleft");
 
-        imu = hardwareMap.get(DcMotor.class, "backright");
-        //auxPod = hardwareMap.get(DcMotor.class "backright");
-        //leftPod = hardwareMap.get(DcMotor.class, "backleft");
-        //rightPod = hardwareMap.get(DcMotor.class, "frontright");
+        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"));
 
-        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        odo = hardwareMap.get(GoBildaPinpointDriver.class,"imu");
+        odo.setOffsets(xOffset, yOffset);
+        odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_SWINGARM_POD);
+        odo.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+        odo.resetPosAndIMU();
+
+        xPosTimer = new ElapsedTime();
+        yPosTimer = new ElapsedTime();
+        hPosTimer = new ElapsedTime();
+
+        xPosPID = new PIDController(xPosTimer);
+        yPosPID = new PIDController(yPosTimer);
+        hPosPID = new PIDController(hPosTimer);
+
+        xPosPID.setCoefficients(0.05 , 0.0,0.0);
+        yPosPID.setCoefficients(0.05, 0.0,0.0);
+        hPosPID.setCoefficients(0.05, 0.0,0.0);
+
+        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         backright.setDirection(DcMotorSimple.Direction.REVERSE);
         frontright.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        backright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backleft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontright.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-        backright.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backleft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontright.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        // backright corresponds to the center odometry pod
-        // backleft corresponds to the left odometry pod
-        // frontright corresponds to the right odometry pod
 
         // play
         waitForStart();
@@ -91,7 +94,7 @@ public class SampleOpMode extends LinearOpMode
         {
             while (opModeIsActive())
             {
-                float power = (1 - gamepad1.right_trigger) * 0.5f;
+                /*float power = (1 - gamepad1.right_trigger) * 0.5f;
 
                 float lx = gamepad1.left_stick_x;
                 float ly = gamepad1.left_stick_y;
@@ -103,11 +106,12 @@ public class SampleOpMode extends LinearOpMode
                 frontleft.setPower((-lx + ly - rx) * power);
                 frontright.setPower((lx + ly + rx) * power);
                 backright.setPower((-lx + ly + rx) * power);
-                backleft.setPower((lx + ly - rx) * power);
+                backleft.setPower((lx + ly - rx) * power);*/
 
                 odometry();
+                Pose2D position = new Pose2D(DistanceUnit.MM, 2000, 500, AngleUnit.DEGREES, 90);
+                goToPosition(position);
 
-                telemetry.addData("pos", pos.toString());
                 telemetry.update();
             }
         }
@@ -115,61 +119,117 @@ public class SampleOpMode extends LinearOpMode
 
     public void odometry()
     {
-        oldRight = currentRight;
-        oldAux = currentAux;
-        oldLeft = currentLeft;
-        oldIMU = currentIMU;
 
-        currentIMU = getEncoderPosition(OdometryPod.Left);
+        odo.bulkUpdate();
 
-        telemetry.addLine(" " + currentIMU);
+        /*
+        This code prints the loop frequency of the REV Control Hub. This frequency is effected
+        by I2C reads/writes. So it's good to keep an eye on. This code calculates the amount
+        of time each cycle takes and finds the frequency (number of updates per second) from
+        that cycle time.
+         */
+        double newTime = getRuntime();
+        double loopTime = newTime-oldTime;
+        double frequency = 1/loopTime;
+        oldTime = newTime;
 
-         /*currentRight = -getEncoderPosition(OdometryPod.Right);
-        currentAux = getEncoderPosition(OdometryPod.Center);
-        currentLeft = -getEncoderPosition(OdometryPod.Left);
 
-        double dnR = currentRight - oldRight;
-        double dnL = currentLeft - oldLeft;
-        double dnB = currentAux - oldAux;
+        /*
+        gets the current Position (x & y in mm, and heading in degrees) of the robot, and prints it.
+         */
+        Pose2D pos = odo.getPosition();
 
-        dnR *= ((2 * Math.PI) / 2000.0) * 4.8;
-        dnL *= ((2 * Math.PI) / 2000.0) * 4.8;
-        dnB *= ((2 * Math.PI) / 2000.0) * 4.8;
+        AprilTagDetection tag = null;
+        AprilTagDetection[] detections = vision.detect();
+        if (detections.length > 0) {
+            tag = detections[0];
+        }
+        if (tag != null) {
+            double yaw = tag.ftcPose.yaw;
+            double bearing = tag.ftcPose.bearing;
 
-        double dtheta = ((dnR - dnL) / 2.0) / (Ly - Ry);
-        double dFwd = (dnR + dnL) / 4.0;
-        double dStr = (dnB/2.0) + (Bx * dtheta);
+            telemetry.addLine("yaw    : " + yaw);
+            telemetry.addLine("bearing: " + bearing);
 
-        double dRelX = dFwd;
-        double dRelY = dStr;*/
+            Pose2D tagPose2D = tagXYH[tag.id - 11];
 
-        //telemetry.addLine("" +dnB/2.0+" "+Bx*dtheta+ " " +dStr  + " " + dtheta);
+            double robotX = tag.robotPose.getPosition().x;
+            double robotY = tag.robotPose.getPosition().y;
+            double robotH = (90 - yaw) + tagPose2D.getHeading(AngleUnit.DEGREES);
 
-        /*if (dtheta != 0) {
-            double r0 = dFwd / dtheta;
-            double r1 = dStr / dtheta;
+            Pose2D position = new Pose2D(DistanceUnit.MM, robotY, robotX, AngleUnit.DEGREES, robotH);
+            odo.setPosition(position);
+        }
 
-            dRelX = r0 * Math.sin(dtheta) - r1 * (1 - Math.cos(dtheta));
-            dRelY = r1 * Math.sin(dtheta) + r0 * (1 - Math.cos(dtheta));
-        }*/
+        String data = String.format(Locale.US, "{X: %.3f, Y: %.3f, H: %.3f}", pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM), pos.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("Position", data);
 
-        /*pos.h += dtheta;
-        pos.x += (dRelX * Math.cos(pos.h) - dRelY * Math.sin(pos.h));
-        pos.y += (dRelY * Math.cos(pos.h) + dRelX * Math.sin(pos.h));*/
+        /*
+        gets the current Velocity (x & y in mm/sec and heading in degrees/sec) and prints it.
+         */
+        Pose2D vel = odo.getVelocity();
+        String velocity = String.format(Locale.US,"{XVel: %.3f, YVel: %.3f, HVel: %.3f}", vel.getX(DistanceUnit.MM), vel.getY(DistanceUnit.MM), vel.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("Velocity", velocity);
+
+        telemetry.addData("X Encoder:", odo.getEncoderX()); //gets the raw data from the X encoder
+        telemetry.addData("Y Encoder:",odo.getEncoderY()); //gets the raw data from the Y encoder
+//        telemetry.addData("Pinpoint Frequency", odo.getFrequency()); //prints/gets the current refresh rate of the Pinpoint
+
+        /*
+        Gets the Pinpoint device status. Pinpoint can reflect a few states. But we'll primarily see
+        READY: the device is working as normal
+        CALIBRATING: the device is calibrating and outputs are put on hold
+        NOT_READY: the device is resetting from scratch. This should only happen after a power-cycle
+        FAULT_NO_PODS_DETECTED - the device does not detect any pods plugged in
+        FAULT_X_POD_NOT_DETECTED - The device does not detect an X pod plugged in
+        FAULT_Y_POD_NOT_DETECTED - The device does not detect a Y pod plugged in
+        */
+        telemetry.addData("Status", odo.getDeviceStatus());
+
+        telemetry.addData("REV Hub Frequency: ", frequency); //prints the control system refresh rate
 
     }
 
-    public int getEncoderPosition(OdometryPod pod)
-    {
-        if (pod == OdometryPod.Center)
-            return backright.getCurrentPosition();
+    public void goToPosition(Pose2D position){
 
-        if (pod == OdometryPod.Right)
-            return frontright.getCurrentPosition();
+        Pose2D currentPos = odo.getPosition();
 
-        if (pod == OdometryPod.Left)
-            return backleft.getCurrentPosition();
+        double currentXPos = currentPos.getX(DistanceUnit.MM);
+        double currentYPos = currentPos.getY(DistanceUnit.MM);
+        double currentHPos = currentPos.getHeading(AngleUnit.DEGREES);
 
-        return 0;
+        double xPos = position.getX(DistanceUnit.MM);
+        double yPos = position.getY(DistanceUnit.MM);
+        double hPos = position.getHeading(AngleUnit.DEGREES);
+
+        double xErr = xPos - currentXPos;
+        double yErr = yPos - currentYPos;
+        double hErr = hPos - currentHPos;
+
+        double cbrtXError = Math.signum(xErr) * (Math.pow(Math.abs(xErr), 1.0/3.0));
+        double cbrtYError = Math.signum(yErr) * (Math.pow(Math.abs(yErr), 1.0/3.0));
+        double cbrtHError = Math.signum(hErr) * (Math.pow(Math.abs(hErr), 1.0/3.0));
+
+        telemetry.addLine("xErr: " + xErr + ", cbrtXErr: " + cbrtXError);
+        telemetry.addLine("yErr: " + yErr + ", cbrtYErr: " + cbrtYError);
+        telemetry.addLine("hErr: " + hErr + ", cbrtHErr: " + cbrtHError);
+
+        double xPower = xPosPID.update(cbrtXError);
+        double yPower = yPosPID.update(cbrtYError);
+        double hPower = hPosPID.update(cbrtHError);
+
+        double theta = currentHPos * (Math.PI / 180.0);
+        double forward  = yPower * Math.sin(theta) + xPower * Math.cos(theta);
+        double sideways = yPower * Math.cos(theta) - xPower * Math.sin(theta);
+
+        double FL = -forward + sideways + hPower;
+        double FR = -forward - sideways - hPower;
+        double BL = -forward - sideways + hPower;
+        double BR = -forward + sideways - hPower;
+
+        /*frontleft.setPower(FL);
+        frontright.setPower(FR);
+        backleft.setPower(BL);
+        backright.setPower(BR);*/
     }
 }

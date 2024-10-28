@@ -4,7 +4,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
@@ -13,34 +15,37 @@ import java.lang.Math;
 @TeleOp(name = "Deep Drive")
 public class DeepDrive extends LinearOpMode
 {
-    DcMotor frontleft;
-    DcMotor frontright;
-    DcMotor backleft;
-    DcMotor backright;
+    DcMotorEx frontleft;
+    DcMotorEx frontright;
+    DcMotorEx backleft;
+    DcMotorEx backright;
+    DcMotorEx[] wheels;
     DcMotor leftshoulder;
     DcMotor rightshoulder;
     DcMotor tricep;
-    CRServo hand;
+    Servo hand;
+    Servo wrist;
     float deadzone = 0.25f;
 
     WebcamName webcam;
 
     public void runOpMode() {
         // get motors from hardware configuration
-        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
-        frontright = hardwareMap.get(DcMotor.class, "frontright");
-        backleft = hardwareMap.get(DcMotor.class, "backleft");
-        backright = hardwareMap.get(DcMotor.class, "backright");
+        frontleft = hardwareMap.get(DcMotorEx.class, "frontleft");
+        frontright = hardwareMap.get(DcMotorEx.class, "frontright");
+        backleft = hardwareMap.get(DcMotorEx.class, "backleft");
+        backright = hardwareMap.get(DcMotorEx.class, "backright");
         rightshoulder = hardwareMap.get(DcMotor.class, "rightshoulder");
         leftshoulder = hardwareMap.get(DcMotor.class, "leftshoulder");
-        hand = hardwareMap.get(CRServo.class, "hand");
+        hand = hardwareMap.get(Servo.class, "hand");
+        wrist = hardwareMap.get(Servo.class, "wrist");
         tricep = hardwareMap.get(DcMotor.class, "tricep");
 
         // set braking
-        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightshoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         leftshoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         tricep.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -49,6 +54,11 @@ public class DeepDrive extends LinearOpMode
         backright.setDirection(DcMotor.Direction.REVERSE);
         frontright.setDirection(DcMotor.Direction.REVERSE);
         rightshoulder.setDirection(DcMotor.Direction.REVERSE);
+
+        wheels = new DcMotorEx[] {frontleft, frontright, backleft, backright};
+        for (DcMotorEx wheel : wheels) {
+            wheel.setVelocityPIDFCoefficients(1.0, 1.0, 1.0, 0.0);
+        }
 
         webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
 
@@ -68,6 +78,11 @@ public class DeepDrive extends LinearOpMode
                 frontright.setPower((ly + lx + rx) * power);
                 backleft.setPower((ly + lx - rx) * power);
                 backright.setPower((ly - lx + rx) * power);
+
+                /*frontleft.setVelocity(100.0);
+                frontright.setVelocity(-100.0);
+                backleft.setVelocity(100.0);
+                backright.setVelocity(-100.0);*/
 
                 // the ARM!
                 if (gamepad1.dpad_down) {
@@ -96,7 +111,8 @@ public class DeepDrive extends LinearOpMode
                     tricep.setPower(0);
                 }
 
-                hand.setPower(gamepad1.right_trigger - gamepad1.left_trigger);
+                hand.setPosition(gamepad1.right_trigger);
+                wrist.setPosition(gamepad1.left_trigger);
             }
         }
     }

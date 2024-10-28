@@ -11,6 +11,11 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "PIDTest")
@@ -28,7 +33,12 @@ public class PIDTest extends LinearOpMode
     PIDController bearingpid;
     PIDController yawpid;
     Vision vision;
-
+    static Pose2D[] tagXYH = new Pose2D[] {new Pose2D(DistanceUnit.INCH, -72.0,  48.0, AngleUnit.DEGREES, 180.0),
+                                           new Pose2D(DistanceUnit.INCH,   0.0,  72.0, AngleUnit.DEGREES,  90.0),
+                                           new Pose2D(DistanceUnit.INCH,  72.0,  48.0, AngleUnit.DEGREES,   0.0),
+                                           new Pose2D(DistanceUnit.INCH,  72.0, -48.0, AngleUnit.DEGREES,   0.0),
+                                           new Pose2D(DistanceUnit.INCH,   0.0, -72.0, AngleUnit.DEGREES, 270.0),
+                                           new Pose2D(DistanceUnit.INCH, -72.0, -48.0, AngleUnit.DEGREES, 180.0)};
     PIDController[] pids;
 
     public enum RBY {
@@ -103,6 +113,7 @@ public class PIDTest extends LinearOpMode
                 {
                     AprilTagDetection tag = null;
                     AprilTagDetection[] detections = vision.detect();
+                    Pose2D tagPose2D = tagXYH[tag.id - 11];
                     if (detections.length > 0)
                     {
                         tag = detections[0];
@@ -115,17 +126,35 @@ public class PIDTest extends LinearOpMode
                         double bearing = tag.ftcPose.bearing;
                         double yaw = tag.ftcPose.yaw;
 
+                        double x = tag.ftcPose.x;
+                        double y = tag.ftcPose.y;
+
+                        double tagHeading = tagPose2D.getHeading(AngleUnit.DEGREES);
+
+                        Position pos = tag.robotPose.getPosition();
+                        YawPitchRollAngles orient = tag.robotPose.getOrientation();
+
+                        double robotHeading = (90 - yaw) + tagHeading;
+                        double robotX = pos.x;
+                        double robotY = pos.y;
+
                         double rangeToTarget = range - targetRange;
 
-                        telemetry.addData("range to target", rangeToTarget);
-                        telemetry.addData("range to target", bearing);
+                        /*telemetry.addData("range to target", rangeToTarget);
+                        telemetry.addData("bearing to target", bearing);
                         telemetry.addData("yaw to target", yaw);
+                        telemetry.addData("x to target", x);
+                        telemetry.addData("y to target", y);*/
+
+                        telemetry.addLine("Robots X Position on Field: " + robotX);
+                        telemetry.addLine("Robots Y Position on Field: " + robotY);
+                        telemetry.addLine("Robots Heading: " + robotHeading);
 
                         rangeoutput = rangepid.update(rangeToTarget, 0);
                         bearingoutput = bearingpid.update(bearing, targetBearing);
                         yawoutput = yawpid.update(yaw, targetYaw);
 
-                        telemetry.addData("pid coefficients", String.format("(%s, %s, %s)", rangepid.kp, rangepid.ki, rangepid.kd));
+                        //telemetry.addData("pid coefficients", String.format("(%s, %s, %s)", rangepid.kp, rangepid.ki, rangepid.kd));
                     }
                     //              double l = Math.sqrt(Math.pow(gamepad1.left_stick_y, 2) + Math.pow(gamepad1.left_stick_x, 2))
 
@@ -141,14 +170,14 @@ public class PIDTest extends LinearOpMode
                     BL += rangeoutput + -bearingoutput + -yawoutput;
                     BR += rangeoutput + bearingoutput + yawoutput;
 
-                    telemetry.addLine("FL: " + FL + " FR: " + FR + " BL: " + BL + " BR: " + BR);
+                    //telemetry.addLine("FL: " + FL + " FR: " + FR + " BL: " + BL + " BR: " + BR);
 
                     double[] powers = new double[]{FL, FR, BL, BR};
                     double localMax = maxAbsolute(powers);
                     if (localMax > maxAbsolute) {
                         maxAbsolute = localMax;
                     }
-                    telemetry.addLine("MAX ABSOLUTE: " + maxAbsolute);
+                    //telemetry.addLine("MAX ABSOLUTE: " + maxAbsolute);
 
                     //maxAbsolute = maxAbsolute(powers);
 
@@ -156,10 +185,10 @@ public class PIDTest extends LinearOpMode
                         powers[i] *= 0.6 / maxAbsolute;
                     }*/
 
-                    frontleft.setPower(powers[0]);
-                    frontright.setPower(powers[1]);
-                    backleft.setPower(powers[2]);
-                    backright.setPower(powers[3]);
+                    frontleft.setVelocity(powers[0]);
+                    frontright.setVelocity(powers[1]);
+                    backleft.setVelocity(powers[2]);
+                    backright.setVelocity(powers[3]);
 
 //                    count += 1;
                     telemetry.update();
@@ -169,8 +198,8 @@ public class PIDTest extends LinearOpMode
                     frontright.setPower(0);
                     backleft.setPower(0);
                     backright.setPower(0);
-                    telemetry.addLine("not moving");
-                    telemetry.addLine();
+                    //telemetry.addLine("not moving");
+                    //telemetry.addLine();
 //                    maxAbsolute = 0.0;
 
                     for (PIDController pid : pids)

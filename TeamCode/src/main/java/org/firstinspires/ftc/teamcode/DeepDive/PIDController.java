@@ -52,6 +52,25 @@ public class PIDController
         log("state, reference: " + state + " , " + reference);*/
         return output;
     }
+
+    public double update(double error) {
+        double deltatime = this.timer.seconds();
+        this.integralSum += error * deltatime;
+
+        double derivative = (error - this.lastError) / (deltatime);
+        this.lastError = error;
+
+        //log("deltaTime: " + deltatime + " seconds");
+        timer.reset();
+
+        double output = (error * kp) + (derivative * kd) + (this.integralSum * ki);
+        /*log("output: " + output);
+        log("error: " + error);
+        log("derivative: " + derivative);
+        log("this.integralSum: " + this.integralSum);
+        log("state, reference: " + state + " , " + reference);*/
+        return output;
+    }
     
     public void setCoefficients(double kp, double ki, double kd){
         this.kp = kp;
