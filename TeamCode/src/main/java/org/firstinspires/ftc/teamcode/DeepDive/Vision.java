@@ -27,24 +27,30 @@ public class Vision {
 
     private void initProcessor()
     {
-        Position cameraPosition = new Position(DistanceUnit.INCH, 0.0, 7.36417323, 4.4375, 0);
-        YawPitchRollAngles cameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, 0.0, 0);
-        AprilTagProcessor.Builder aprilBuilder = new AprilTagProcessor.Builder();
-        /*
-        These intrinsics are specific to the wide angle lens
-        if you are not using that lens, comment the next line out
-        or follow a tutorial to get that specific cameras intrinsics
-        */
-        aprilBuilder.setLensIntrinsics(539.415, 539.415, 625.669, 385.219);
-        aprilBuilder.setCameraPose(cameraPosition, cameraOrientation);
+        // Cameras position on the big testing robot
+        Position testingCameraPosition = new Position(DistanceUnit.INCH, 0.0, 7.36417323, 4.4375, 0);
+        YawPitchRollAngles testingCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, 0.0, 0);
+
+        Position competitionCameraPosition = new Position(DistanceUnit.INCH, 0.0, 6.02362, 2.32283, 0);
+        YawPitchRollAngles competitionCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, -90.0, 0);
+
+        AprilTagProcessor.Builder aprilBuilder = new AprilTagProcessor.Builder()
+                /*.setLensIntrinsics(500.0, 500.0, 640.0, 360.0) */ // Testing robot lens intrinsics
+                .setLensIntrinsics(822.317, 822.317, 319.495, 242.502) // Logitech C270 webcam
+                .setDrawAxes(true)
+                .setCameraPose(competitionCameraPosition, competitionCameraOrientation);
+
         aprilProcess = aprilBuilder.build();
+        aprilProcess.setPoseSolver(AprilTagProcessor.PoseSolver.OPENCV_ITERATIVE);
 
 
-        VisionPortal.Builder visionBuilder = new VisionPortal.Builder();
-        visionBuilder.setCamera(webcam);
-        visionBuilder.setCameraResolution(new Size(1280, 720));
-        visionBuilder.addProcessor(aprilProcess);
-        visionBuilder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
+        VisionPortal.Builder visionBuilder = new VisionPortal.Builder()
+                .setCamera(webcam)
+                /*.setCameraResolution(new Size(1280, 720))*/ // Testing Robot resolution
+                .setCameraResolution(new Size(640, 480))
+                .addProcessor(aprilProcess)
+                .setStreamFormat(VisionPortal.StreamFormat.MJPEG);
+
         visPort = visionBuilder.build();
     }
 

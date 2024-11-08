@@ -30,8 +30,8 @@ public class SampleOpMode extends LinearOpMode
     private static final float deadzone = 0.25f;
 
     double oldTime = 0;
-    double xOffset = 152; //319.919
-    double yOffset = -140; //-257.292
+    double xOffset = 26; //  152 is Testing Robot offset
+    double yOffset = 92; // -140 is Testing Robot offset
 
     double cameraOffset = 187.05;
 
@@ -148,14 +148,15 @@ public class SampleOpMode extends LinearOpMode
             double yaw = tag.ftcPose.yaw;
             double bearing = tag.ftcPose.bearing;
 
-            telemetry.addLine("yaw    : " + yaw);
-            telemetry.addLine("bearing: " + bearing);
+            telemetry.addLine("yaw          : " + yaw);
+            telemetry.addLine("bearing      : " + bearing);
+            telemetry.addLine("bearing - yaw: " + (bearing - yaw));
 
             Pose2D tagPose2D = tagXYH[tag.id - 11];
 
             double robotX = tag.robotPose.getPosition().x;
             double robotY = tag.robotPose.getPosition().y;
-            double robotH = (90 - yaw) + tagPose2D.getHeading(AngleUnit.DEGREES);
+            double robotH = tag.robotPose.getOrientation().getYaw(AngleUnit.DEGREES);
 
             Pose2D position = new Pose2D(DistanceUnit.MM, robotY, robotX, AngleUnit.DEGREES, robotH);
             odo.setPosition(position);
