@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import java.lang.Math;
 
 @TeleOp(name = "Vision Test")
+@Disabled
 public class VisionTest extends LinearOpMode
 {
     Vision vision;

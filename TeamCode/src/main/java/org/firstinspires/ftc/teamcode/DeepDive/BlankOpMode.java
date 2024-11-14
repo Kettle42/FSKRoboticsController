@@ -1,11 +1,15 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import androidx.appcompat.app.ActionBar;
+
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "Blank Test")
+@Disabled
 public class BlankOpMode extends LinearOpMode
 {
     public GoBildaPinpointDriver brains;

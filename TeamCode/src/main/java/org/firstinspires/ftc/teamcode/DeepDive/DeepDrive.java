@@ -195,12 +195,18 @@ public class DeepDrive extends LinearOpMode
                     tricep.setPower(0); // no button is pressed, stop
                 }
 
+                if (armer.y)
+                {
+                    shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                }
+
                 // setting the position for the claws and wrist
                 hand.setPosition(1 - 0.16 * armer.right_trigger);
-                wrist.setPosition(0.33 * armer.left_trigger);
+                wrist.setPosition(0.5 * armer.left_trigger);
 
                 // button on the gamepad to stop the robot
-                if (wheeler.touchpad)
+                if (wheeler.touchpad || armer.touchpad)
                 {
                     requestOpModeStop();
                 }
@@ -211,6 +217,9 @@ public class DeepDrive extends LinearOpMode
 
                 telemetry.addData("j", j);
                 telemetry.addData("Arm Speed", armPowers[j]);
+
+                telemetry.addData("Arm Pos", shoulder.getCurrentPosition());
+                telemetry.addData("Tricep Pos", tricep.getCurrentPosition());
 
                 telemetry.addLine(wrist.getPosition() + "");
                 telemetry.update();

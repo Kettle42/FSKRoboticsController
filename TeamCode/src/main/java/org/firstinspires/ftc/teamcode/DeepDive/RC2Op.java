@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 @TeleOp(name = "RC 2 Initial test")
+@Disabled
 public class RC2Op extends LinearOpMode
 {
     private DcMotorEx backleft;

@@ -343,7 +343,7 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynch> 
      * relative to that new, more accurate position.
      * @param pos a Pose2D describing the robot's new position.
      */
-    public Pose2D setPosition(Pose2D pos){
+    public OurPose2D setPosition(OurPose2D pos){
         writeByteArray(Register.X_POSITION,(floatToByteArray((float) pos.getX(DistanceUnit.MM), ByteOrder.LITTLE_ENDIAN)));
         writeByteArray(Register.Y_POSITION,(floatToByteArray((float) pos.getY(DistanceUnit.MM),ByteOrder.LITTLE_ENDIAN)));
         writeByteArray(Register.H_ORIENTATION,(floatToByteArray((float) pos.getHeading(AngleUnit.RADIANS),ByteOrder.LITTLE_ENDIAN)));
@@ -451,8 +451,8 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynch> 
     /**
      * @return a Pose2D containing the estimated position of the robot
      */
-    public Pose2D getPosition(){
-        return new Pose2D(DistanceUnit.MM,
+    public OurPose2D getPosition(){
+        return new OurPose2D(DistanceUnit.MM,
                 xPosition,
                 yPosition,
                 AngleUnit.RADIANS,
@@ -464,8 +464,8 @@ public class GoBildaPinpointDriver extends I2cDeviceSynchDevice<I2cDeviceSynch> 
     /**
      * @return a Pose2D containing the estimated velocity of the robot, velocity is unit per second
      */
-    public Pose2D getVelocity(){
-        return new Pose2D(DistanceUnit.MM,
+    public OurPose2D getVelocity(){
+        return new OurPose2D(DistanceUnit.MM,
                 xVelocity,
                 yVelocity,
                 AngleUnit.RADIANS,
