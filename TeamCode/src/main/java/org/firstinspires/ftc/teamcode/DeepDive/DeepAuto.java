@@ -27,9 +27,18 @@ public class DeepAuto extends LinearOpMode
         Start,
         RaiseArm,
         ApproachBar,
-        Extend,
+        ReleaseArm,
         Park,
+        TouchBar,
         End;
+    }
+
+    public enum TouchBarSubStage
+    {
+        MoveBack,
+        MoveLeft,
+        MoveForward,
+        MoveRight,
     }
 
     private DcMotor frontright;
@@ -66,6 +75,8 @@ public class DeepAuto extends LinearOpMode
     PIDController tricepPID;
 
     Vision vision;
+
+    boolean bar;
 
     /*static OurPose2D[] tagXYH = new OurPose2D[] { new OurPose2D(DistanceUnit.INCH, -72.0,  48.0, AngleUnit.DEGREES, 180.0),
             new OurPose2D(DistanceUnit.INCH,   0.0,  72.0, AngleUnit.DEGREES,  90.0),
@@ -127,6 +138,8 @@ public class DeepAuto extends LinearOpMode
 
         state = AutoState.Start;
 
+        bar = false;
+
         // play
         waitForStart();
         if (opModeIsActive())
@@ -174,32 +187,54 @@ public class DeepAuto extends LinearOpMode
                             {
                                 wheel.setPower(0);
                             }
-                            state = AutoState.Extend;
+                            state = AutoState.ReleaseArm;
+                            // change next state based on whether or not we want to park or touch bar
                         }
                         break;
                     }
-                    case Extend:
+                    case ReleaseArm:
                     {
-                        int targetPos = -800;
-                        // extend the arm to finish the placing
-                        int triErr = targetPos - tricep.getCurrentPosition();
-                        if (Math.abs(triErr) < 10)
+                        hand.setPosition(0.84);
+
+                        int targetPos = -1000;
+                        int shoulderErr = targetPos - shoulder.getCurrentPosition();
+                        if (Math.abs(shoulderErr) < 10)
                         {
-                            hand.setPosition(0.84);
-                            tricep.setPower(0);
-                            state = AutoState.Park;
+                            shoulder.setPower(0);
+                            if (bar)
+                            {
+                                state = AutoState.TouchBar;
+                            }
+                            else
+                            {
+                                state = AutoState.Park;
+                            }
                         }
                         else
                         {
-                            double cbrtErr = Math.signum(triErr) * Math.cbrt(Math.abs(triErr));
-                            tricep.setPower(tricepPID.update(cbrtErr));
+                            double cbrtErr = Math.cbrt(shoulderErr);
+                            shoulder.setPower(shoulderPID.update(cbrtErr));
                         }
-                        break;
                     }
                     case Park:
                     {
                         // park in the space or touch the bar
                         telemetry.addData("X", odo.getPosition().x);
+
+                        if (false)
+                        {
+                            state = AutoState.End;
+                        }
+
+                        break;
+                    }
+                    case TouchBar:
+                    {
+                        // move the robot to touch the bar
+                        if (false)
+                        {
+                            state = AutoState.End;
+                        }
                         break;
                     }
                     case End:

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.DeepDive;
 
 import androidx.appcompat.app.ActionBar;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 
 @TeleOp(name = "Angle Drive")
+@Disabled
 public class AngleDrive extends LinearOpMode
 {
     public DcMotorEx frontleft;
