@@ -230,12 +230,14 @@ public class DeepAuto extends LinearOpMode
                             {
                                 state = AutoState.TouchBar; // advance state 
                                 touchBarState = TouchBarSubStage.MoveBackLeft;
+                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-268.0, 907.0, 0.0));
+                                // prepare the robot for moving to touch bar
                             }
                             else
                             {
                                 state = AutoState.Park; // advance state
-                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-1000.0, -1732.0, 0.0);
-                                // prepare the robot for movement
+                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-1000.0, -1732.0, 0.0));
+                                // prepare the robot for movement to corner
                             }
                         }
                         else
@@ -268,12 +270,67 @@ public class DeepAuto extends LinearOpMode
 
                         switch (touchBarState)
                         {
-                            case 
-                        }
-                        
-                        if (false)
-                        {
-                            state = AutoState.End;
+                            case MoveBackLeft:
+                            {
+                                goToPosition(targetPosition, 0.75);
+
+                                if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0)
+                                {
+                                    for (DcMotor wheel : wheels)
+                                    {
+                                        wheel.setPower(0);
+                                    }
+                                    touchBarState = TouchBarSubStage.MoveForward;
+                                    targetPosition = new SparkFunOTOS.Pose2D(635.0, 0.0, 0.0);
+                                }
+                                break;   
+                            }
+                            case MoveForward:
+                            {
+                                goToPosition(targetPosition, 0.75);
+
+                                if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0)
+                                {
+                                    for (DcMotor wheel : wheels)
+                                    {
+                                        wheel.setPower(0);
+                                    }
+                                    touchBarState = TouchBarSubStage.MoveRight;
+                                    targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(0.0, 528.0, 0.0));
+                                }                                
+                                break;
+                            }
+                            case MoveRight:
+                            {
+                                goToPosition(targetPosition, 0.75);
+
+                                if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0)
+                                {
+                                    for (DcMotor wheel : wheels)
+                                    {
+                                        wheel.setPower(0);
+                                    }
+                                    touchBarState = TouchBarSubStage.MoveArm;
+                                }
+                                break;
+                            }
+                            case MoveArm:
+                            {
+                                int armTarget = -1000;
+                                int shoulderErr = shoulder.getCurrentPosition() - armTarget;
+
+                                if (Math.abs(shoulderErr) < 10) // end condition
+                                {
+                                    shoulder.setPower(0); // stop action
+                                    state = AutoState.End;
+                                }
+                                else
+                                {
+                                    double cbrtErr = Math.cbrt(shoulderErr);
+                                    shoulder.setPower(shoulderPID.update(cbrtErr)); // sub-state action
+                                }
+                                break;
+                            }
                         }
                         break;
                     }
