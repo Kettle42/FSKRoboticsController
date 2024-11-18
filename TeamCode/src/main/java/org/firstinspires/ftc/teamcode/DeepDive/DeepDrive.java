@@ -52,7 +52,7 @@ public class DeepDrive extends LinearOpMode
 
         // set reversals
         backright.setDirection(DcMotor.Direction.REVERSE);
-//        backleft.setDirection(DcMotor.Direction.REVERSE);
+        backleft.setDirection(DcMotor.Direction.REVERSE);
 //        frontright.setDirection(DcMotor.Direction.REVERSE);
         frontleft.setDirection(DcMotor.Direction.REVERSE);
 

@@ -150,7 +150,8 @@ public class DeepAuto extends LinearOpMode
         DcMotor[] wheels = new DcMotor[] {frontleft, frontright, backleft, backright};
 
         frontright.setDirection(DcMotorSimple.Direction.REVERSE);
-        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
+//        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
+//        backright.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -161,7 +162,7 @@ public class DeepAuto extends LinearOpMode
 
         bar = false;
 
-        targetPosition = new SparkFunOTOS.Pose2D(894.4, 0.0, 0.0);
+        targetPosition = new SparkFunOTOS.Pose2D(0.0, 0.0, 0.0);
 
         // play
         waitForStart();
@@ -197,15 +198,13 @@ public class DeepAuto extends LinearOpMode
                     }
                     case ApproachBar:
                     {
-
                         // drive towards the bar to hook the specimen
-                        double targetX = 894.4; // distance from wall to bars
                         odometry();
                         // SparkFunOTOS.Pose2D position = new SparkFunOTOS.Pose2D(targetX, 0, 0.0);
-                        goToPosition(position, 0.75); // state action
+                        goToPosition(targetPosition, 0.75); // state action
                         // telemetry.addData("X", position.x);
 
-                        if (PoseMath.distance(odo.getPosition().x, targetPosition) < 4.0) // state end condition
+                        if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0) // state end condition
                         {
                             for (DcMotor wheel : wheels)
                             {
@@ -220,7 +219,9 @@ public class DeepAuto extends LinearOpMode
                     {
                         hand.setPosition(0.84);
 
-                        int targetPos = -1000;
+                        int targetPos = -1400;
+                        telemetry.addData("Arm Pos", shoulder.getCurrentPosition());
+
                         int shoulderErr = targetPos - shoulder.getCurrentPosition();
                         if (Math.abs(shoulderErr) < 10)
                         {
@@ -228,7 +229,7 @@ public class DeepAuto extends LinearOpMode
                             
                             if (bar)
                             {
-                                state = AutoState.TouchBar; // advance state 
+                                state = AutoState.TouchBar; // advance state
                                 touchBarState = TouchBarSubStage.MoveBackLeft;
                                 targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-268.0, 907.0, 0.0));
                                 // prepare the robot for moving to touch bar
@@ -245,12 +246,13 @@ public class DeepAuto extends LinearOpMode
                             double cbrtErr = Math.cbrt(shoulderErr);
                             shoulder.setPower(shoulderPID.update(cbrtErr));
                         }
+                        break;
                     }
                     case Park:
                     {
                         // park in the space or touch the bar
                         odometry();
-                        goToPosition(targetPosition, 0.75);
+                        goToPosition(targetPosition, 0.25);
 
                         if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0)
                         {
