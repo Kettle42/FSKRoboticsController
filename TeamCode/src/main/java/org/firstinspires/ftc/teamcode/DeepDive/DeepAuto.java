@@ -237,7 +237,7 @@ public class DeepAuto extends LinearOpMode
                             else
                             {
                                 state = AutoState.Park; // advance state
-                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-1000.0, -1732.0, 0.0));
+                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-800.0, -1732.0, 0.0));
                                 // prepare the robot for movement to corner
                             }
                         }
