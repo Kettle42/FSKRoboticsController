@@ -1,7 +1,16 @@
 {
   "ExpandedNodes": [
     "",
-    "\\FtcRobotController"
+    "\\TeamCode",
+    "\\TeamCode\\src",
+    "\\TeamCode\\src\\main",
+    "\\TeamCode\\src\\main\\java",
+    "\\TeamCode\\src\\main\\java\\org",
+    "\\TeamCode\\src\\main\\java\\org\\firstinspires",
+    "\\TeamCode\\src\\main\\java\\org\\firstinspires\\ftc",
+    "\\TeamCode\\src\\main\\java\\org\\firstinspires\\ftc\\teamcode",
+    "\\TeamCode\\src\\main\\java\\org\\firstinspires\\ftc\\teamcode\\DeepDive"
   ],
+  "SelectedNode": "\\TeamCode\\src\\main\\java\\org\\firstinspires\\ftc\\teamcode\\DeepDive\\DeepAuto.java",
   "PreviewInSolutionExplorer": false
 }

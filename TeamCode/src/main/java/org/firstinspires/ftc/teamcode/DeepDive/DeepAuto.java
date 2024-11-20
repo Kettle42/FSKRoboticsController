@@ -27,6 +27,7 @@ public class DeepAuto extends LinearOpMode
         Start,
         RaiseArm,
         ApproachBar,
+        ExtendArm,
         ReleaseArm,
         Park,
         TouchBar,
@@ -163,6 +164,12 @@ public class DeepAuto extends LinearOpMode
         bar = false;
 
         targetPosition = new SparkFunOTOS.Pose2D(0.0, 0.0, 0.0);
+        if (opModeInInit()) {
+            while (opModeInInit()) {
+                odometry();
+            }
+        }
+
 
         // play
         waitForStart();
@@ -185,10 +192,10 @@ public class DeepAuto extends LinearOpMode
                         // get the arm into position so that the specimen can be hooked
                         int targetPos = -2000;
                         int shoulderErr = targetPos - shoulder.getCurrentPosition();
-                        telemetry.addData("Shoulder Error", shoulderErr);
+//                        telemetry.addData("Shoulder Error", shoulderErr);
                         if (Math.abs(shoulderErr) < 20) {
                             shoulder.setPower(0);
-                            targetPosition = new SparkFunOTOS.Pose2D(894.4, 0.0, 0.0);
+                            targetPosition = new SparkFunOTOS.Pose2D(924.4, 0.0, 0.0);
                             state = AutoState.ApproachBar;
                         } else {
                             double cbrtErr = Math.signum(shoulderErr) * Math.cbrt(Math.abs(shoulderErr));
@@ -200,19 +207,38 @@ public class DeepAuto extends LinearOpMode
                     {
                         // drive towards the bar to hook the specimen
                         odometry();
+
                         // SparkFunOTOS.Pose2D position = new SparkFunOTOS.Pose2D(targetX, 0, 0.0);
                         goToPosition(targetPosition, 0.75); // state action
                         // telemetry.addData("X", position.x);
 
                         if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0) // state end condition
                         {
-                            for (DcMotor wheel : wheels)
-                            {
+                            for (DcMotor wheel : wheels) {
                                 wheel.setPower(0); // stop state action
                             }
-                            state = AutoState.ReleaseArm; // next state
+                            state = AutoState.ExtendArm;
                             // change next state based on whether or not we want to park or touch bar
                         }
+                        break;
+                    }
+                    case ExtendArm:
+                    {
+                        int tricepTarget = -600;
+
+                        int tricepErr = tricepTarget - tricep.getCurrentPosition();
+                        if (Math.abs(tricepErr) < 10)
+                        {
+                            tricep.setPower(0);
+                            state = AutoState.ReleaseArm;
+                            sleep(500);
+                        }
+                        else
+                        {
+                            double cbrtErr = Math.cbrt(tricepErr);
+                            tricep.setPower(tricepPID.update(cbrtErr));
+                        }
+
                         break;
                     }
                     case ReleaseArm:
@@ -252,7 +278,7 @@ public class DeepAuto extends LinearOpMode
                     {
                         // park in the space or touch the bar
                         odometry();
-                        goToPosition(targetPosition, 0.25);
+                        goToPosition(targetPosition, 0.75);
 
                         if (PoseMath.distance(odo.getPosition(), targetPosition) < 4.0)
                         {
@@ -283,7 +309,7 @@ public class DeepAuto extends LinearOpMode
                                         wheel.setPower(0);
                                     }
                                     touchBarState = TouchBarSubStage.MoveForward;
-                                    targetPosition = new SparkFunOTOS.Pose2D(635.0, 0.0, 0.0);
+                                    targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(635.0, 0.0, 0.0));
                                 }
                                 break;   
                             }

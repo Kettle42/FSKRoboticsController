@@ -199,6 +199,8 @@ public class DeepDrive extends LinearOpMode
                 {
                     shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    tricep.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    tricep.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
 
                 // setting the position for the claws and wrist
