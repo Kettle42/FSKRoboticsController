@@ -151,7 +151,7 @@ public class DeepAuto extends LinearOpMode
         DcMotor[] wheels = new DcMotor[] {frontleft, frontright, backleft, backright};
 
         frontright.setDirection(DcMotorSimple.Direction.REVERSE);
-//        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
+        backleft.setDirection(DcMotorSimple.Direction.REVERSE);
 //        backright.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

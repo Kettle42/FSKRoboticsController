@@ -52,7 +52,7 @@ public class DeepDrive extends LinearOpMode
 
         // set reversals
         backright.setDirection(DcMotor.Direction.REVERSE);
-        backleft.setDirection(DcMotor.Direction.REVERSE);
+//        backleft.setDirection(DcMotor.Direction.REVERSE);
 //        frontright.setDirection(DcMotor.Direction.REVERSE);
         frontleft.setDirection(DcMotor.Direction.REVERSE);
 
@@ -64,7 +64,7 @@ public class DeepDrive extends LinearOpMode
         }
 
 //        webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
-        boolean reversed = false; // whether or not the front or back is considered "forward"
+        boolean reversed = true; // whether or not the front or back is considered "forward"
         boolean canReverse = true;
 
         double[] powers = new double[]{0.1, 0.25, 0.5, 0.66}; // speed coefficients
@@ -162,10 +162,10 @@ public class DeepDrive extends LinearOpMode
                 if (Math.abs(rx) < deadzone) rx = 0;
 
                 // set wheel powers, adjusted for reversable front
-                frontleft.setPower(((ly + lx) * power) + (rx * Math.abs(power)));
-                frontright.setPower(((ly - lx) * power) - (rx * Math.abs(power)));
-                backleft.setPower(((ly + lx) * power) - (rx * Math.abs(power)));
-                backright.setPower(((ly - lx) * power) + (rx * Math.abs(power)));
+                frontleft.setPower(((ly + lx) * power) - (rx * Math.abs(power)));
+                frontright.setPower(((ly - lx) * power) + (rx * Math.abs(power)));
+                backleft.setPower(((ly + lx) * power) + (rx * Math.abs(power)));
+                backright.setPower(((ly - lx) * power) -  (rx * Math.abs(power)));
 
                 // the ARM!
                 if (armer.dpad_down)
