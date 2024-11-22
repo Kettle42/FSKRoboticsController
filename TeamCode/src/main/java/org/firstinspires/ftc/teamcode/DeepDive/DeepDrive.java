@@ -24,6 +24,8 @@ public class DeepDrive extends LinearOpMode
     double deadzone = 0.25;
     Gamepad wheeler;
     Gamepad armer;
+    Servo elevatorRight;
+    Servo elevatorLeft;
 
 //    WebcamName webcam; // this will be used when a camera is (eventually) attached to the robot
 //
@@ -39,6 +41,9 @@ public class DeepDrive extends LinearOpMode
         hand = hardwareMap.get(Servo.class, "hand");
         wrist = hardwareMap.get(Servo.class, "wrist");
         tricep = hardwareMap.get(DcMotor.class, "tricep");
+
+        elevatorRight = hardwareMap.get(Servo.class, "elevatorRight");
+        elevatorLeft = hardwareMap.get(Servo.class, "elevatorLeft");
 
         // the wheels should stop, but not resist outside forces
         frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -74,6 +79,9 @@ public class DeepDrive extends LinearOpMode
         double[] armPowers = new double[] {0.25, 0.5, 1};
         int j = armPowers.length - 1;
         boolean canChangeArmPower = true;
+
+        boolean elevators = false;
+        boolean canChangeElevators = false;
 
         wheeler = gamepad1;
         armer = gamepad2;
@@ -120,6 +128,29 @@ public class DeepDrive extends LinearOpMode
                 else
                 {
                     canChangePower = true; // reset ability to change index
+                }
+
+                if (wheeler.dpad_down)
+                {
+                    if (canChangeElevators)
+                    {
+                        elevatorRight.setPosition(0);
+                        elevatorLeft.setPosition(0);
+                        canChangeElevators = false;
+                    }
+                }
+                else if (wheeler.dpad_up)
+                {
+                    if (canChangeElevators)
+                    {
+                        elevatorRight.setPosition(1);
+                        elevatorLeft.setPosition(1);
+                        canChangeElevators = false;
+                    }
+                }
+                else
+                {
+                    canChangeElevators = true;
                 }
 
                 if (armer.x)
@@ -205,7 +236,7 @@ public class DeepDrive extends LinearOpMode
 
                 // setting the position for the claws and wrist
                 hand.setPosition(1 - 0.16 * armer.right_trigger);
-                wrist.setPosition(0.5 * armer.left_trigger);
+                wrist.setPosition(armer.left_trigger);
 
                 // button on the gamepad to stop the robot
                 if (wheeler.touchpad || armer.touchpad)
