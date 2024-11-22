@@ -183,17 +183,17 @@ public class DeepAuto extends LinearOpMode
                     case Start:
                     {
                         // get the robot ready to start
-                        wrist.setPosition(0.19);
+                        wrist.setPosition(0.25);
                         state = AutoState.RaiseArm;
                         break;
                     }
                     case RaiseArm:
                     {
                         // get the arm into position so that the specimen can be hooked
-                        int targetPos = -2000;
+                        int targetPos = -2280;
                         int shoulderErr = targetPos - shoulder.getCurrentPosition();
 //                        telemetry.addData("Shoulder Error", shoulderErr);
-                        if (Math.abs(shoulderErr) < 20) {
+                        if (Math.abs(shoulderErr) < 10) {
                             shoulder.setPower(0);
                             targetPosition = new SparkFunOTOS.Pose2D(924.4, 0.0, 0.0);
                             state = AutoState.ApproachBar;

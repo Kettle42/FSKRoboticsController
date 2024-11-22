@@ -212,13 +212,32 @@ public class DeepDrive extends LinearOpMode
                 backright.setPower(((ly - lx) * power) -  (rx * Math.abs(power)));
 
                 // the ARM!
+                boolean frontArm = shoulder.getCurrentPosition() > -3558;
+                int maxExt = 0;
+                if (frontArm)
+                {
+                    maxExt = -600;
+                }
+                if (Math.abs(shoulder.getCurrentPosition() + 3558) < 300)
+                {
+                    maxExt = -3638;
+                }
+
                 if (armer.dpad_down)
                 {
                     shoulder.setPower(armPowers[j]); // go down
                 }
                 else if (armer.dpad_up)
                 {
-                    shoulder.setPower(-armPowers[j]); // go up
+                    if (tricep.getCurrentPosition() > maxExt)
+                    {
+                        shoulder.setPower(-armPowers[j]); // go up
+                    }
+                    else
+                    {
+                        armer.rumble(100);
+                        shoulder.setPower(0);
+                    }
                 }
                 else
                 {
@@ -232,12 +251,22 @@ public class DeepDrive extends LinearOpMode
                 }
                 else if (armer.dpad_right)
                 {
-                    tricep.setPower(-1); // extend
+                    if (tricep.getCurrentPosition() > maxExt)
+                    {
+                        tricep.setPower(-1); // extend
+                    }
+                    else
+                    {
+                        armer.rumble(100);
+                        tricep.setPower(0);
+                    }
                 }
                 else
                 {
                     tricep.setPower(0); // no button is pressed, stop
                 }
+
+                telemetry.addData("can extend", tricep.getCurrentPosition() > maxExt);
 
                 if (armer.y)
                 {
@@ -248,7 +277,7 @@ public class DeepDrive extends LinearOpMode
                 }
 
                 // setting the position for the claws and wrist
-                hand.setPosition(0.275 * (1 - armer.right_trigger));
+                hand.setPosition(0.25 * (1 - armer.right_trigger));
                 wrist.setPosition(0.66 * armer.left_trigger);
 
                 // button on the gamepad to stop the robot
