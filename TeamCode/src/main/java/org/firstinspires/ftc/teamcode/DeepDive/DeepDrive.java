@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.lang.Math;
 
@@ -86,6 +87,8 @@ public class DeepDrive extends LinearOpMode
         wheeler = gamepad1;
         armer = gamepad2;
 
+        ElapsedTime time = new ElapsedTime();
+
         telemetry.addLine(wrist.getPosition() + "");
         telemetry.update();
 
@@ -130,6 +133,16 @@ public class DeepDrive extends LinearOpMode
                     canChangePower = true; // reset ability to change index
                 }
 
+                if (time.seconds() > 80 && time.seconds() < 90)
+                {
+                    if ((((int)time.seconds()) % 2) == 0)
+                    {
+                        wheeler.rumble(500);
+                        armer.rumble(500);
+                    }
+                }
+
+                if (time.seconds() < 90 && !wheeler.left_bumper) canChangeElevators = false;
                 if (wheeler.dpad_down)
                 {
                     if (canChangeElevators)
@@ -235,8 +248,8 @@ public class DeepDrive extends LinearOpMode
                 }
 
                 // setting the position for the claws and wrist
-                hand.setPosition(1 - 0.16 * armer.right_trigger);
-                wrist.setPosition(armer.left_trigger);
+                hand.setPosition(0.275 * (1 - armer.right_trigger));
+                wrist.setPosition(0.66 * armer.left_trigger);
 
                 // button on the gamepad to stop the robot
                 if (wheeler.touchpad || armer.touchpad)
