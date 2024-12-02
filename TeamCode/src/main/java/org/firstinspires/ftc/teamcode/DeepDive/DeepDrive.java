@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.lang.Math;
 
-@TeleOp(name = "Deep Drive v1.1.0 (prod)")
-public class DeepDrive extends LinearOpMode
+@TeleOp(name = "Deep Drive v2.0.1 (new choose this)")
+public class DeepDriveBoogloo extends LinearOpMode
 {
     DcMotorEx frontleft;
     DcMotorEx frontright;
@@ -222,26 +222,39 @@ public class DeepDrive extends LinearOpMode
                 {
                     maxExt = -3638;
                 }
-
-                if (armer.dpad_down)
+                
+                if (!frontArm)
                 {
-                    shoulder.setPower(armPowers[j]); // go down
-                }
-                else if (armer.dpad_up)
-                {
-                    if (tricep.getCurrentPosition() > maxExt)
-                    {
-                        shoulder.setPower(-armPowers[j]); // go up
-                    }
-                    else
-                    {
-                        armer.rumble(100);
-                        shoulder.setPower(0);
-                    }
+                    wrist.setPosition(0.66);
                 }
                 else
                 {
-                    shoulder.setPower(0); // no button is pressed, stop
+                    hand.setPosition(0.25 * (1 - armer.right_trigger));
+                    wrist.setPosition(0.66 * armer.left_trigger);
+                }
+                if (!armer.left_bumper)
+                {
+                    if (armer.dpad_down)
+                    {
+                        shoulder.setPower(armPowers[j]); // go down
+                    }
+                    else if (armer.dpad_up)
+                    {
+                        // if (tricep.getCurrentPosition() > maxExt)
+                        if (true)
+                        {
+                            shoulder.setPower(-armPowers[j]); // go up
+                        }
+                        else
+                        {
+                            armer.rumble(100);
+                            shoulder.setPower(0);
+                        }
+                    }
+                    else
+                    {
+                        shoulder.setPower(0); // no button is pressed, stop
+                    }
                 }
 
                 // the tricep
@@ -251,7 +264,7 @@ public class DeepDrive extends LinearOpMode
                 }
                 else if (armer.dpad_right)
                 {
-                    if (tricep.getCurrentPosition() > maxExt)
+                    if (tricep.getCurrentPosition() > maxExt || armer.left_bumper)
                     {
                         tricep.setPower(-1); // extend
                     }
@@ -276,9 +289,9 @@ public class DeepDrive extends LinearOpMode
                     tricep.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
 
+                
                 // setting the position for the claws and wrist
-                hand.setPosition(0.25 * (1 - armer.right_trigger));
-                wrist.setPosition(0.66 * armer.left_trigger);
+                
 
                 // button on the gamepad to stop the robot
                 if (wheeler.touchpad || armer.touchpad)
