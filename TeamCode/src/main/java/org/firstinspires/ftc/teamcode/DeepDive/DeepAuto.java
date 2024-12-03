@@ -422,9 +422,9 @@ public class DeepAuto extends LinearOpMode
         double yErr = yPos - currentYPos;
         double hErr = hPos - currentHPos;
 
-        double cbrtXError = Math.signum(xErr) * (Math.pow(Math.abs(xErr), 1.0/3.0));
-        double cbrtYError = Math.signum(yErr) * (Math.pow(Math.abs(yErr), 1.0/3.0));
-        double cbrtHError = Math.signum(hErr) * (Math.pow(Math.abs(hErr), 1.0/3.0));
+        double cbrtXError = Math.cbrt(xErr);
+        double cbrtYError = Math.cbrt(yErr);
+        double cbrtHError = Math.cbrt(hErr);
 
         telemetry.addLine("xErr: " + xErr + ", cbrtXErr: " + cbrtXError);
         telemetry.addLine("yErr: " + yErr + ", cbrtYErr: " + cbrtYError);

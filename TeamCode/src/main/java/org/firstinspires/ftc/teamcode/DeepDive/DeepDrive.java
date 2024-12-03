@@ -10,8 +10,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.lang.Math;
 
-@TeleOp(name = "Deep Drive v2.0.1 (new choose this)")
-public class DeepDriveBoogloo extends LinearOpMode
+@TeleOp(name = "Deep Drive v2.2.1 (new choose this)")
+public class DeepDrive extends LinearOpMode
 {
     DcMotorEx frontleft;
     DcMotorEx frontright;
@@ -27,6 +27,7 @@ public class DeepDriveBoogloo extends LinearOpMode
     Gamepad armer;
     Servo elevatorRight;
     Servo elevatorLeft;
+    double wristPos = 0.0;
 
 //    WebcamName webcam; // this will be used when a camera is (eventually) attached to the robot
 //
@@ -211,9 +212,15 @@ public class DeepDriveBoogloo extends LinearOpMode
                 backleft.setPower(((ly + lx) * power) + (rx * Math.abs(power)));
                 backright.setPower(((ly - lx) * power) -  (rx * Math.abs(power)));
 
+
+
+
+
                 // the ARM!
                 boolean frontArm = shoulder.getCurrentPosition() > -3558;
+                boolean overridden = armer.left_bumper;
                 int maxExt = 0;
+                
                 if (frontArm)
                 {
                     maxExt = -600;
@@ -222,30 +229,20 @@ public class DeepDriveBoogloo extends LinearOpMode
                 {
                     maxExt = -3638;
                 }
-                
-                if (!frontArm)
-                {
-                    wrist.setPosition(0.66);
-                }
-                else
-                {
-                    hand.setPosition(0.25 * (1 - armer.right_trigger));
-                    wrist.setPosition(0.66 * armer.left_trigger);
-                }
-                if (!armer.left_bumper)
+
+                if (!overridden) // override key not pressed
                 {
                     if (armer.dpad_down)
                     {
-                        shoulder.setPower(armPowers[j]); // go down
+                        shoulder.setPower(armPowers[j]); // rotate down
                     }
                     else if (armer.dpad_up)
                     {
-                        // if (tricep.getCurrentPosition() > maxExt)
-                        if (true)
+                        if (true) // removed max rotation
                         {
-                            shoulder.setPower(-armPowers[j]); // go up
+                            shoulder.setPower(-armPowers[j]); // rotate up
                         }
-                        else
+                        else // this would trigger if a max rotation were implemented
                         {
                             armer.rumble(100);
                             shoulder.setPower(0);
@@ -264,7 +261,7 @@ public class DeepDriveBoogloo extends LinearOpMode
                 }
                 else if (armer.dpad_right)
                 {
-                    if (tricep.getCurrentPosition() > maxExt || armer.left_bumper)
+                    if (tricep.getCurrentPosition() > maxExt || overridden)
                     {
                         tricep.setPower(-1); // extend
                     }
@@ -289,9 +286,22 @@ public class DeepDriveBoogloo extends LinearOpMode
                     tricep.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 }
 
-                
+
                 // setting the position for the claws and wrist
-                
+                if (!frontArm)
+                {
+                    wrist.setPosition(0.66);
+                }
+                else
+                {
+                    hand.setPosition(0.25 * (1 - armer.right_trigger));
+                    if (Math.abs(armer.right_stick_y) > deadzone)
+                    {
+                        wristPos += armer.right_stick_y;
+                    }
+                    wrist.setPosition(wristPos);
+                }
+
 
                 // button on the gamepad to stop the robot
                 if (wheeler.touchpad || armer.touchpad)
