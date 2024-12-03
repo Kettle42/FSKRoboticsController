@@ -3,7 +3,7 @@
 
     Copyright (c) 2024 SparkFun Electronics
 */
-package org.firstinspires.ftc.teamcode.DeepDive;
+package org.firstinspires.ftc.teamcode.KettleLibrary;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -11,7 +11,6 @@ import java.util.Arrays;
 import com.qualcomm.robotcore.hardware.I2cAddr;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynch;
 import com.qualcomm.robotcore.hardware.I2cDeviceSynchDevice;
-import com.qualcomm.robotcore.hardware.I2cDeviceSynchSimple;
 import com.qualcomm.robotcore.hardware.configuration.annotations.DeviceProperties;
 import com.qualcomm.robotcore.hardware.configuration.annotations.I2cDeviceType;
 

@@ -3,9 +3,8 @@
 
     Copyright (c) 2024 SparkFun Electronics
 */
-package org.firstinspires.ftc.teamcode.DeepDive;
+package org.firstinspires.ftc.teamcode.KettleLibrary;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 

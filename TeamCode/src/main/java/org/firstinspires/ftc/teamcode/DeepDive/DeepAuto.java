@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
-import android.util.Log;
-
 import java.util.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -16,8 +14,10 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.KettleLibrary.PIDController;
+import org.firstinspires.ftc.teamcode.KettleLibrary.Vision;
 
-// import org.firstinspires.ftc.teamcode.DeepDive.XyhVector;
+// import org.firstinspires.ftc.teamcode.KettleLibrary.XyhVector;
 
 @Autonomous(name = "Deep Dive v1.0.0")
 public class DeepAuto extends LinearOpMode
