@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import android.util.Size;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -35,7 +37,9 @@ public class AngleDrive extends LinearOpMode
         frontright = hardwareMap.get(DcMotorEx.class, "frontright");
         backright = hardwareMap.get(DcMotorEx.class, "backright");
         backleft = hardwareMap.get(DcMotorEx.class, "backleft");
-        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"));
+
+        Vision.CameraOffset cameraOffset = new Vision.CameraOffset(0.0, 153.0, 59.0, 0.0, -90.0, -90.0);
+        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"), Vision.LensIntrinsics.LogitechC270, cameraOffset, new Size(640, 480));
 
         wheels = new DcMotorEx[] {frontleft, frontright, backleft, backright};
 

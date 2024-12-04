@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import android.util.Size;
+
 import java.util.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -121,7 +123,8 @@ public class DeepAuto extends LinearOpMode
         wrist = hardwareMap.get(Servo.class, "wrist");
         hand = hardwareMap.get(Servo.class, "hand");
 
-        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        Vision.CameraOffset cameraOffset = new Vision.CameraOffset(0.0, 153.0, 59.0, 0.0, -90.0, -90.0);
+        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"), Vision.LensIntrinsics.LogitechC270, cameraOffset, new Size(640, 480));
 
         odo = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         configureOtos();

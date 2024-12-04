@@ -19,26 +19,57 @@ public class Vision {
     private VisionPortal visPort;
     private ArrayList<AprilTagDetection> detections = new ArrayList<>();
 
-    public Vision(WebcamName webcam)
+    public static class LensIntrinsics
     {
-        this.webcam = webcam;
-        initProcessor();
+        public static LensIntrinsics LogitechC270 = new LensIntrinsics(822.317, 822.317, 319.495, 242.502);
+        // add new lens intrinsics here ^^
+
+        public double fx;
+        public double fy;
+        public double cx;
+        public double cy;
+
+        public LensIntrinsics(double fx, double fy, double cx, double cy)
+        {
+            this.fx = fx;
+            this.fy = fy;
+            this.cx = cx;
+            this.cy = cy;
+        }
     }
 
-    private void initProcessor()
+    public static class CameraOffset
+    {
+        public Position position;
+        public YawPitchRollAngles orientation;
+
+        public CameraOffset(double xMM, double yMM, double zMM, double yawDeg, double pitchDeg, double rollDeg)
+        {
+            position = new Position(DistanceUnit.MM, xMM, yMM, zMM, 0);
+            orientation = new YawPitchRollAngles(AngleUnit.DEGREES, yawDeg, pitchDeg, rollDeg, 0);
+        }
+    }
+
+    public Vision(WebcamName webcam, LensIntrinsics lens, CameraOffset offset, Size resolution)
+    {
+        this.webcam = webcam;
+        initProcessor(lens, offset, resolution);
+    }
+
+    private void initProcessor(LensIntrinsics lens, CameraOffset offset, Size resolution)
     {
         // Cameras position on the big testing robot
         Position testingCameraPosition = new Position(DistanceUnit.INCH, 0.0, 7.36417323, 4.4375, 0);
         YawPitchRollAngles testingCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, 0.0, 0);
 
-        Position competitionCameraPosition = new Position(DistanceUnit.INCH, 0.0, 6.02362, 2.32283, 0);
-        YawPitchRollAngles competitionCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, -90.0, 0);
+//        Position competitionCameraPosition = new Position(DistanceUnit.INCH, 0.0, 6.02362, 2.32283, 0);
+//        YawPitchRollAngles competitionCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, -90.0, 0);
 
         AprilTagProcessor.Builder aprilBuilder = new AprilTagProcessor.Builder()
                 /*.setLensIntrinsics(500.0, 500.0, 640.0, 360.0) */ // Testing robot lens intrinsics
-                .setLensIntrinsics(822.317, 822.317, 319.495, 242.502) // Logitech C270 webcam
+                .setLensIntrinsics(lens.fx, lens.fy, lens.cx, lens.cy) // Logitech C270 webcam
                 .setDrawAxes(true)
-                .setCameraPose(competitionCameraPosition, competitionCameraOrientation);
+                .setCameraPose(offset.position, offset.orientation);
 
         aprilProcess = aprilBuilder.build();
         aprilProcess.setPoseSolver(AprilTagProcessor.PoseSolver.OPENCV_ITERATIVE);
@@ -47,7 +78,7 @@ public class Vision {
         VisionPortal.Builder visionBuilder = new VisionPortal.Builder()
                 .setCamera(webcam)
                 /*.setCameraResolution(new Size(1280, 720))*/ // Testing Robot resolution
-                .setCameraResolution(new Size(640, 480))
+                .setCameraResolution(resolution)
                 .addProcessor(aprilProcess)
                 .setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
