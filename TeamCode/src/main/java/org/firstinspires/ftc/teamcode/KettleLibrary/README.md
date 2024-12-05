@@ -82,6 +82,26 @@ with an `x`, `y`, and heading.
 ### The Vision class
 
 The purpose of this class is to abstract all of the systems that are required to get AprilTag inputs. 
-To make a Vision object, you will need a `WebcamName` (which is just a webcam on the Robot), the lens intrinsics
+To make a Vision object, you will need a `WebcamName` (which is just a webcam on the Robot, gotten with 
+`hardwareMap.get(WebcamName.class, "WEBCAM_NAME_HERE")`), the lens intrinsics
 (see [here](https://www.youtube.com/watch?v=bTcCY3DZM0k "Tutorial on finding lens intrinsics") for a tutorial), 
 the camera offset (x, y, z position, and yaw, pitch, roll rotation), and the resolution.
+
+With the lens intrinsics, use the Vision.LensIntrinsics class. ***If you have to find the intrinsics 
+for a camera, add the intrinsics as a static variable in the class for future use.***  
+
+For the camera offset, measure the forward offset in millimeters for `x`, the sideways offset in millimeters
+for `y`, and there should be no need for the `z` offset (unless you want to be very particular). Next, 
+you will need the orientation, measured in degrees. The `yaw` is how much the camera is rotated parallel 
+to the ground (or it could be thought of as turning left or right). The `pitch` is how much the camera is 
+rotated perpendicular to the front of the Robot (like looking up or down). And `roll` is how much the camera is 
+rotated parallel to the front of the Robot (like rotating to see something that is sideways). 
+
+For the resolution, make a new `Size` object with the resolution of the camera (e.g. `new Size(640, 480)`).
+
+--- 
+
+## Other Systems
+
+---
+
