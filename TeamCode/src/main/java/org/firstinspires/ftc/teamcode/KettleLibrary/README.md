@@ -99,6 +99,14 @@ rotated parallel to the front of the Robot (like rotating to see something that 
 
 For the resolution, make a new `Size` object with the resolution of the camera (e.g. `new Size(640, 480)`).
 
+For getting AprilTag data, use `vision.detect();`. This will return an array of the seen AprilTags, so 
+to get a specific index of a tag, use `vision.detect()[index];`. If you need to get the same list of 
+without gathering camera input, use `vision.getLastDetections();`. This will return that same array of 
+tags. 
+
+To try and get a specific tag by an id, use `vision.tryGetTag(id);` This **will** rescan for inputs.
+This returns the specific AprilTagDetection object if it can be found, otherwise it returns `null`.
+
 --- 
 
 ## Other Systems

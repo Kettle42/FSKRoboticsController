@@ -13,7 +13,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.ArrayList;
 
 public class Vision {
-    private WebcamName webcam;
+    private final WebcamName webcam;
 
     private AprilTagProcessor aprilProcess;
     private VisionPortal visPort;
@@ -58,13 +58,6 @@ public class Vision {
 
     private void initProcessor(LensIntrinsics lens, CameraOffset offset, Size resolution)
     {
-        // Cameras position on the big testing robot
-        Position testingCameraPosition = new Position(DistanceUnit.INCH, 0.0, 7.36417323, 4.4375, 0);
-        YawPitchRollAngles testingCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, 0.0, 0);
-
-//        Position competitionCameraPosition = new Position(DistanceUnit.INCH, 0.0, 6.02362, 2.32283, 0);
-//        YawPitchRollAngles competitionCameraOrientation = new YawPitchRollAngles(AngleUnit.DEGREES, 0.0, -90.0, -90.0, 0);
-
         AprilTagProcessor.Builder aprilBuilder = new AprilTagProcessor.Builder()
                 /*.setLensIntrinsics(500.0, 500.0, 640.0, 360.0) */ // Testing robot lens intrinsics
                 .setLensIntrinsics(lens.fx, lens.fy, lens.cx, lens.cy) // Logitech C270 webcam
@@ -73,7 +66,6 @@ public class Vision {
 
         aprilProcess = aprilBuilder.build();
         aprilProcess.setPoseSolver(AprilTagProcessor.PoseSolver.OPENCV_ITERATIVE);
-
 
         VisionPortal.Builder visionBuilder = new VisionPortal.Builder()
                 .setCamera(webcam)
