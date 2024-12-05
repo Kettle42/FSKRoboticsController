@@ -87,6 +87,8 @@ To make a Vision object, you will need a `WebcamName` (which is just a webcam on
 (see [here](https://www.youtube.com/watch?v=bTcCY3DZM0k "Tutorial on finding lens intrinsics") for a tutorial), 
 the camera offset (x, y, z position, and yaw, pitch, roll rotation), and the resolution.
 
+#### Setting up and using a Vision object
+
 With the lens intrinsics, use the Vision.LensIntrinsics class. ***If you have to find the intrinsics 
 for a camera, add the intrinsics as a static variable in the class for future use.***  
 
@@ -111,5 +113,35 @@ This returns the specific AprilTagDetection object if it can be found, otherwise
 
 ## Other Systems
 
----
+### The PIDController class
 
+The purpose of this class is to allow us to set a target position for a motor or Robot Position and 
+approach that position without overshooting. Unless you are very interested, you do not need to know 
+exactly how this class works. See 
+[here](https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller "PID Controller Explanation")
+if you really want to know.
+
+#### Setting up a PIDController
+
+To make a PIDController, all you need to do is call its constructor.
+`PIDController pid = new PIDController();`
+
+Next step is to set coefficients. Most should start with something close to 
+`pid.setCoefficients(0.05. 0.0, 0.0);`
+
+Now the only thing left is application of the PID and its output.
+
+#### For basic use
+
+For basic use, it is good enough to use only one value. The way we have found works best to do this 
+is to use the cube root of the error. Here is an example.
+
+```
+int currentState = motor.getCurrentPosition();
+int targetPosition = 1000;
+
+int error = targetPosition - currentState;
+double cbrtErr = Math.cbrt(error);
+
+motor.setPower(pid.update(cbrtErr));
+```

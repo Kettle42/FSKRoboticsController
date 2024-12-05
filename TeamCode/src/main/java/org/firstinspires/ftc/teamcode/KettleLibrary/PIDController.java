@@ -25,7 +25,15 @@ public class PIDController
         this.times = new ArrayList<Double>();
         this.errors = new ArrayList<Double>();
     }
-    
+
+    public PIDController()
+    {
+        ElapsedTime timer = new ElapsedTime();
+        timer.reset();
+        this.timer = timer;
+        this.times = new ArrayList<Double>();
+        this.errors = new ArrayList<Double>();
+    }
     
     /*
     reference -> where we want to be 
