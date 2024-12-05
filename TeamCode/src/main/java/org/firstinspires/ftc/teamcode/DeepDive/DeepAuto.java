@@ -16,6 +16,7 @@ import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.KettleLibrary.PIDController;
 import org.firstinspires.ftc.teamcode.KettleLibrary.Vision;
 
@@ -43,7 +44,7 @@ public class DeepAuto extends LinearOpMode
         MoveRight,
         MoveArm,
     }
-    // matthew was here :)
+
     public static class PoseMath
     {
         public static SparkFunOTOS.Pose2D add(SparkFunOTOS.Pose2D a, SparkFunOTOS.Pose2D b)
