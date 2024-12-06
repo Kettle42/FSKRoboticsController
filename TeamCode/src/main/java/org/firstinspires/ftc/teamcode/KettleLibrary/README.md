@@ -7,7 +7,7 @@ Use this for any backend systems that are generalized and can be used in any yea
 
 ---
 
-## Code Systems
+# Code Systems
 
 ---
 
@@ -111,7 +111,7 @@ This returns the specific AprilTagDetection object if it can be found, otherwise
 
 --- 
 
-## Other Systems
+## Other Code Systems
 
 ### The PIDController class
 
@@ -144,4 +144,29 @@ int error = targetPosition - currentState;
 double cbrtErr = Math.cbrt(error);
 
 motor.setPower(pid.update(cbrtErr));
+```
+
+This should let your motor approach encoder position 1000 without going over.
+
+#### For Adavanced use
+
+[//]: # (TODO: Add tutorial for tuning PID Coefficients, what Ki and Kd do, etc.)
+
+---
+
+# Code Structuring
+
+---
+
+## TeleOp
+
+For TeleOp, it is a good idea to have a basic flow for your program. It should start with defining the 
+variables for Robot actuators/sensors, and any other instance variables needed in different methods. 
+It should then contain your `runOpMode()` method, where you first get the actual objects for the actuators/sensors
+using `hardwareMap.get()`, and . It then should call `waitForStart();`, check if `opModeIsActive()` 
+and enter a loop that runs while `opModeIsActive()`. 
+
+Here is a good sample so far...
+```java
+public class 
 ```
