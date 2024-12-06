@@ -127,7 +127,7 @@ To make a PIDController, all you need to do is call its constructor.
 `PIDController pid = new PIDController();`
 
 Next step is to set coefficients. Most should start with something close to 
-`pid.setCoefficients(0.05. 0.0, 0.0);`
+`pid.setCoefficients(0.5. 0.0, 0.0);`
 
 Now the only thing left is application of the PID and its output.
 
@@ -147,13 +147,51 @@ motor.setPower(pid.update(cbrtErr));
 ```
 
 This should let your motor approach encoder position 1000 without going over.
+Something to note, however, is that you still have to tune the proportional coefficient
+of the PID so that it doesn't go too fast or too slow, this is best accomplished by
+starting with a value like 0.5, if thats too fast then halve it to 0.25, if its too
+slow, multiply by 1.5 to 0.75. Repeat this process until the desired effect is reached.
 
 #### For Adavanced use
 
-[//]: # (TODO: Add tutorial for tuning PID Coefficients, what Ki and Kd do, etc.)
+For advanced usage, we will first need to discuss what the four coefficients do.
+
+Kp is the proportional coefficient, it allows for the system to adjust based on
+the amount of error from the target point. This helps the the system adjust to try and
+reach a set point. For example, when the robot is trying to turn so that is is facing
+an april tag, it might not know how much to turn or how that affects the amount of
+power given to the motors. The Kp coefficient allows for the robot to understand its
+error and start correcting and moving towards a specific point.
+
+Kd is the derivative coefficient, it allows for the system to adjust based on the
+rate of change. This helps to prevent overshoot and improve stability by preventing
+rapid changes of the system. For example, when the robot is trying to turn so that 
+it is facing an april tag, it might turn too much and then have to turn the other 
+direction to compensate. The Kd coefficient would drastically reduce that oscillation.
+
+Ki is the integral coefficient, it allows the system to adjust based on the accumulated
+error over the run time of the system. This allows the system to correct any small 
+remaining error that might exist when the system gets closer to the target. This
+allows for a more precise and accurate system. For example, when the robot is trying
+to turn so that it is facing an april tag, it might be stuck turned 10 degrees away
+from the april tag. The Ki coefficient would help the robot be able to turn that
+extra 10 degrees and be more accurate.
+
+Kf is the feedforward coefficient, it allows the system to adjust based on any estimated
+disturbances. This allows for the system to maintain a steady path or go back to the 
+target point more reliably if moved away from it. For example, when the robot is trying
+to turn so that it is facing an april tag, it could bump into another robot and suddenly
+get stuck a lot further from the target point. The Kf coefficient would help the robot
+calculate for disturbances and be able to adjust afterwards.
+
+Now that we have a basic understanding of what each coefficient does, how do we tune 
+the PID for a desired effect.
+
+Start by setting everything to 0 except for proportional coefficient, which should be 0.5. 
+
+[//]: # (TODO: section on how to tune a PID)
 
 ---
-
 # Code Structuring
 
 ---
@@ -167,6 +205,57 @@ using `hardwareMap.get()`, and . It then should call `waitForStart();`, check if
 and enter a loop that runs while `opModeIsActive()`. 
 
 Here is a good sample so far...
+
 ```java
-public class 
+/*
+    SeasonFolder/RobotProgram.java
+    
+    12-6-2024 by Matthew Perry
+ */
+
+package org.firstinspires.ftc.teamcode.SeasonFolder;
+
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+// ^ these imports will be expanded upon
+
+@TeleOp(name = "Robot Program") // this marks the program as a TeleOp OpMode
+public class RobotProgram extends LinearOpMode {
+    public DcMotor frontleft;
+    public DcMotor frontright;
+    public DcMotor backleft;
+    public DcMotor backright;
+    // make the wheels accessible from all Robot methods
+    
+    public int someGlobalVar = 24;
+    // ^ this variable will be accessible from any method in the TeleOp routine 
+
+    @Override
+    public void runOpMode()
+    {
+        frontleft = hardwareMap.get(DcMotor.class, "frontleft");
+        frontright = hardwareMap.get(DcMotor.class, "frontright");
+        backleft = hardwareMap.get(DcMotor.class, "backleft");
+        backright = hardwareMap.get(DcMotor.class, "backright");
+        // ^ get the wheel objects from the Robot configuration
+        // if you named the wheels something different in the Robot configuration, 
+        // make sure that you change these Strings accordingly
+        
+        double someLocalVar = 20.5;
+        // ^ this variable will only be accessible in this method
+        // trying to access it in another method will result in a crash
+
+        // ^ all of the above code runs when INIT is pressed
+        waitForStart(); // waits for the start button to be pressed
+        if (opModeIsActive())
+        {
+            while (opModeIsActive())
+            {
+                // TeleOp code will go here
+            }
+        }
+    }
+}
 ```
+
