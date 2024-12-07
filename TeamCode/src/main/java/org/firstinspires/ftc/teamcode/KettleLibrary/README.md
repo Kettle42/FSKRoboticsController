@@ -1,7 +1,7 @@
 # The Use of the KettleLibrary Package
 
-This package is for cross-season utilites. Such as our PIDController class, Vision class, or XyhVector. 
-Use this for any backend systems that are generalized and can be used in any year.  
+This package is for cross-season utilites. Such as our PIDController class. Use this for any backend
+systems that are generalized and can be used in any year.  
 
 ***When you update or add a class, add documentation here. This is not a request.***
 
@@ -198,10 +198,10 @@ Start by setting everything to 0 except for proportional coefficient, which shou
 
 ## TeleOp
 
-For TeleOp, it is a good idea to have a basic flow for your program. It should start with defining the 
+For TeleOp, it is a good idea to have a basic flow for your program. Your class should start with defining the 
 variables for Robot actuators/sensors, and any other instance variables needed in different methods. 
-It should then contain your `runOpMode()` method, where you first get the actual objects for the actuators/sensors
-using `hardwareMap.get()`, and . It then should call `waitForStart();`, check if `opModeIsActive()` 
+The class should then contain your `runOpMode()` method, where you first get the actual objects for the actuators/sensors
+using `hardwareMap.get()`, and . The method then should call `waitForStart();`, check if `opModeIsActive()` 
 and enter a loop that runs while `opModeIsActive()`. 
 
 Here is a good sample so far...
@@ -221,18 +221,20 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 // ^ these imports will be expanded upon
 
 @TeleOp(name = "Robot Program") // this marks the program as a TeleOp OpMode
-public class RobotProgram extends LinearOpMode {
+// ^ you can change the name that is displayed on the Driver Station here
+public class RobotProgram extends LinearOpMode 
+{
     public DcMotor frontleft;
     public DcMotor frontright;
     public DcMotor backleft;
     public DcMotor backright;
     // make the wheels accessible from all Robot methods
-    
+
     public int someGlobalVar = 24;
     // ^ this variable will be accessible from any method in the TeleOp routine 
 
     @Override
-    public void runOpMode()
+    public void runOpMode() 
     {
         frontleft = hardwareMap.get(DcMotor.class, "frontleft");
         frontright = hardwareMap.get(DcMotor.class, "frontright");
@@ -241,16 +243,18 @@ public class RobotProgram extends LinearOpMode {
         // ^ get the wheel objects from the Robot configuration
         // if you named the wheels something different in the Robot configuration, 
         // make sure that you change these Strings accordingly
-        
+
+        // more setup code will go here later
+
         double someLocalVar = 20.5;
         // ^ this variable will only be accessible in this method
         // trying to access it in another method will result in a crash
 
         // ^ all of the above code runs when INIT is pressed
         waitForStart(); // waits for the start button to be pressed
-        if (opModeIsActive())
+        if (opModeIsActive()) 
         {
-            while (opModeIsActive())
+            while (opModeIsActive()) 
             {
                 // TeleOp code will go here
             }
@@ -259,3 +263,26 @@ public class RobotProgram extends LinearOpMode {
 }
 ```
 
+The next step is to get the Robot driving. assuming you are using mecanum wheels, you will need to 
+know how they work. The first thing you need to do is to reverse the proper wheels so that the Robot 
+will go forward when all wheels are set to positive power. An easy way to do this is to tell the Robot
+under `// TeleOp code will go here` to set all wheel power to 0.5.
+
+```
+// TeleOp code will go here
+frontleft.setPower(0.5);
+frontright.setPower(0.5);
+backleft.setPower(0.5);
+backright.setPower(0.5);
+```
+
+When you run the program, you can lift the Robot off the ground to see which of the wheels are moving 
+backwards, if any. These motors should be reversed in the program. To do this, go to where it says 
+`// more setup code will go here later` and insert `wheel.setDirection(DcMotorSimple.Direction.REVERSE)`
+for each wheel that needs reversing (You may need to add `import com.qualcomm.robotcore.hardware.DcMotorSimple;` 
+for this). Now, when you run that program, all the wheels should hopefully be going the same way. If
+you now place the Robot on the ground, it should move forwards. If it did not, remove the 
+`wheel.setDirection()` lines and try again.
+
+If your Robot went forward, congratulations! Now onto the hard part. Mecanum wheels are tricky when 
+it comes to getting them to operate properly. 
