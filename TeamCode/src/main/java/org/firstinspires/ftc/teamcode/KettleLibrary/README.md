@@ -187,9 +187,26 @@ calculate for disturbances and be able to adjust afterwards.
 Now that we have a basic understanding of what each coefficient does, how do we tune 
 the PID for a desired effect.
 
-Start by setting everything to 0 except for proportional coefficient, which should be 0.5. 
+Start by setting everything to 0 except for proportional coefficient, which should be 0.5.
+We are going to be following the same methods for all of the coefficients. This method
+is: If the effect is not enough, multiply by 1.5, if its too much, multiply by 0.5. For
+the Kp, we want to achieve an oscillating effect where it isn't spiraling out of control
+and oscillating more and more, but we also don't want it to oscillate less and less until
+it reaches the target point. Once we reach that perfect oscillation, or close to it, we
+want to set the Kp to exactly half of this value. Next up is the Ki, again start with 0.5.
+continue to tune by multiplying by 0.5 if it overshoots and starts oscillating, or 1.5 if
+there is still some error when it comes to a near stop. Move onto Kd where we are doing
+the same thing but we are going to start with analyzing what is happening at each step.
+We are going to use a Kd of 0 as the base point, and notice the amount of oscillation.
+Start with a Kd of 0.5 and if its oscillating more than at 0, multiply by 0.5 until the
+oscillation becomes similar or less than if Kd were 0. If the oscillation is less, 
+multiply by 1.5 until the oscillation becomes higher than Kd at 0. From there, multiply
+by 1.5 or 0.5 until you converge on a value of kD that dampens oscillations without
+creating instablity. Then for Kf, do the same you did for Ki, but this time manually
+manipulate the system while it is on to see how it reacts to disturbances. Multiply by
+0.5 if it overcompensates to disturbances and starts overshooting, and 1.5 if it
+gets stuck away from the set point.
 
-[//]: # (TODO: section on how to tune a PID)
 
 ---
 # Code Structuring
@@ -230,6 +247,7 @@ public class RobotProgram extends LinearOpMode
     public DcMotor backright;
     // make the wheels accessible from all Robot methods
 
+    
     public int someGlobalVar = 24;
     // ^ this variable will be accessible from any method in the TeleOp routine 
 
