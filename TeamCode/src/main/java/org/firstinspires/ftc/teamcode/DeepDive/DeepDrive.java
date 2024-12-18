@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import android.graphics.Color;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -22,6 +24,8 @@ public class DeepDrive extends LinearOpMode
     DcMotor tricep;
     Servo hand;
     Servo wrist;
+    Servo light;
+    RevColorSensorV3 colorSensor;
     double deadzone = 0.25;
     Gamepad wheeler;
     Gamepad armer;
@@ -46,6 +50,9 @@ public class DeepDrive extends LinearOpMode
 
         elevatorRight = hardwareMap.get(Servo.class, "elevatorRight");
         elevatorLeft = hardwareMap.get(Servo.class, "elevatorLeft");
+        light = hardwareMap.get(Servo.class, "light");
+
+        colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
 
         // the wheels should stop, but not resist outside forces
         frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -58,7 +65,7 @@ public class DeepDrive extends LinearOpMode
         tricep.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // set reversals
-        backright.setDirection(DcMotor.Direction.REVERSE);
+//        backright.setDirection(DcMotor.Direction.REVERSE);
 //        backleft.setDirection(DcMotor.Direction.REVERSE);
 //        frontright.setDirection(DcMotor.Direction.REVERSE);
         frontleft.setDirection(DcMotor.Direction.REVERSE);
@@ -207,8 +214,8 @@ public class DeepDrive extends LinearOpMode
                 if (Math.abs(rx) < deadzone) rx = 0;
 
                 // set wheel powers, adjusted for reversable front
-                frontleft.setPower(((ly + lx) * power) - (rx * Math.abs(power)));
-                frontright.setPower(((ly - lx) * power) + (rx * Math.abs(power)));
+                frontleft.setPower(((ly - lx) * power) + (rx * Math.abs(power)));
+                frontright.setPower(((ly + lx) * power) - (rx * Math.abs(power)));
                 backleft.setPower(((ly + lx) * power) + (rx * Math.abs(power)));
                 backright.setPower(((ly - lx) * power) -  (rx * Math.abs(power)));
 

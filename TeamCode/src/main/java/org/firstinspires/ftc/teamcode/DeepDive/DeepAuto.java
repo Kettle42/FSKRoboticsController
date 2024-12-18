@@ -460,11 +460,11 @@ public class DeepAuto extends LinearOpMode
         odo.setLinearUnit(DistanceUnit.MM);
         odo.setAngularUnit(AngleUnit.DEGREES);
 
-        SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(100.0, 0.0, 0.0);
+        SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(100.5, 0.0, 0.0);
         odo.setOffset(offset);
 
         odo.setLinearScalar(2438.4 / 2582.48);
-//        odo.setAngularScalar(3600.0 / 3621.0);
+        odo.setAngularScalar(3600.0 / 3621.0);
 
         odo.calibrateImu();
         odo.resetTracking();
