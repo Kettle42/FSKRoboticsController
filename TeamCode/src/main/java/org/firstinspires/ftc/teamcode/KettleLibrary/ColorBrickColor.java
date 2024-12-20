@@ -4,8 +4,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.DeepDive.SampleIdentifier.Color;
 
-import java.security.Provider;
-
 public enum ColorBrickColor
 {
     Off   (0.000),
@@ -30,41 +28,5 @@ public enum ColorBrickColor
     public void setColorBrick(Servo light)
     {
         light.setPosition(this.pos);
-    }
-
-    public Color toColor()
-    {
-        if (this.pos < 0.277) return new Color(0, 0, 0);
-        if (this.pos > 0.722) return new Color(255, 255, 255);
-
-        double hue = (this.pos - 0.277) * (270.0 / 0.445);
-        int X = 255 * (int)((1 - Math.abs(((hue / 60) % 2) - 1)));
-
-        if (hue < 60)
-        {
-            return new Color(255, X, 0);
-        }
-        else if (hue < 120)
-        {
-            return new Color(X, 255, 0);
-        }
-        else if (hue < 180)
-        {
-            return new Color(0, 255, X);
-        }
-        else if (hue < 240)
-        {
-            return new Color(0, X, 255);
-        }
-        else if (hue < 300)
-        {
-            return new Color(X, 0, 255);
-        }
-        else if (hue < 360)
-        {
-            return new Color(255, 0, X);
-        }
-
-        return new Color(0, 0, 0);
     }
 }
