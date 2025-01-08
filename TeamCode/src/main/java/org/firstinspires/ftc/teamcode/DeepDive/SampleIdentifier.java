@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
+
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -50,6 +54,8 @@ public class SampleIdentifier
             return (this.subtract(other)).magnitude();
         }
 
+        @SuppressLint("DefaultLocale")
+        @NonNull
         public String toString()
         {
             return String.format("Color( %d, %d, %d )", r, g, b);

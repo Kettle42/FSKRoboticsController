@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.DeepDive;
 
-import android.graphics.Color;
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import java.lang.Math;
 
+@Config
 @TeleOp(name = "Deep Drive v2.2.1 (new choose this)")
 public class DeepDrive extends LinearOpMode
 {
@@ -32,6 +33,8 @@ public class DeepDrive extends LinearOpMode
     Servo elevatorRight;
     Servo elevatorLeft;
     double wristPos = 0.0;
+
+    public static int testvar = 100;
 
 //    WebcamName webcam; // this will be used when a camera is (eventually) attached to the robot
 //
@@ -89,8 +92,10 @@ public class DeepDrive extends LinearOpMode
         int j = armPowers.length - 1;
         boolean canChangeArmPower = true;
 
-        boolean elevators = false;
         boolean canChangeElevators = false;
+
+        HandValues.ClawMode clawMode = HandValues.ClawMode.Grabby;
+        boolean canChangeClawMode = false;
 
         wheeler = gamepad1;
         armer = gamepad2;
@@ -195,6 +200,19 @@ public class DeepDrive extends LinearOpMode
                     canChangeArmPower = true;
                 }
 
+                if (armer.y)
+                {
+                    if (canChangeClawMode)
+                    {
+                        canChangeClawMode = false;
+                        clawMode = clawMode.toggle();
+                    }
+                }
+                else
+                {
+                    canChangeClawMode = true;
+                }
+
                 double bright = (i + 1f) / powers.length;
                 if (reversed) wheeler.setLedColor(0.5 * bright, 1 * bright, 0 * bright, -1);
                 else wheeler.setLedColor(1, 0.5 * bright, 0, -1);
@@ -241,13 +259,13 @@ public class DeepDrive extends LinearOpMode
                 {
                     if (armer.dpad_down)
                     {
-                        shoulder.setPower(armPowers[j]); // rotate down
+                        shoulder.setPower(-armPowers[j]); // rotate down
                     }
                     else if (armer.dpad_up)
                     {
                         if (true) // removed max rotation
                         {
-                            shoulder.setPower(-armPowers[j]); // rotate up
+                            shoulder.setPower(armPowers[j]); // rotate up
                         }
                         else // this would trigger if a max rotation were implemented
                         {
@@ -285,7 +303,7 @@ public class DeepDrive extends LinearOpMode
 
                 telemetry.addData("can extend", tricep.getCurrentPosition() > maxExt);
 
-                if (armer.y)
+                if (armer.left_bumper)
                 {
                     shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -301,12 +319,24 @@ public class DeepDrive extends LinearOpMode
                 }
                 else
                 {
-                    hand.setPosition(0.25 * (1 - armer.right_trigger));
-                    if (Math.abs(armer.right_stick_y) > deadzone)
+//                    hand.setPosition(0.25 * (1 - armer.right_trigger));
+                    hand.setPosition(clawMode.position + (clawMode.openOffset * armer.right_trigger));
+
+                    if (armer.right_bumper && clawMode == HandValues.ClawMode.Clippy && Math.abs(getShoulderAngle()) < 10)
                     {
-                        wristPos += armer.right_stick_y;
+                        setWristAngle(-90.0);
                     }
-                    wrist.setPosition(wristPos);
+                    else
+                    {
+                        setWristAngle(-getShoulderAngle());
+                    }
+
+//                    if (Math.abs(armer.right_stick_y) > deadzone)
+//                    {
+//                        wristPos += 0.0025 * armer.right_stick_y;
+//                    }
+//                    wrist.setPosition(wristPos);
+//                    wristPos = Math.max(Math.min(wrist.getPosition(), 1), 0.28);
                 }
 
 
@@ -326,9 +356,52 @@ public class DeepDrive extends LinearOpMode
                 telemetry.addData("Arm Pos", shoulder.getCurrentPosition());
                 telemetry.addData("Tricep Pos", tricep.getCurrentPosition());
 
+                telemetry.addData("Arm Angle", getShoulderAngle());
+                telemetry.addData("Wrist Angle", getWristAngle());
+
                 telemetry.addLine(wrist.getPosition() + "");
                 telemetry.update();
             }
         }
+    }
+
+    private double getShoulderAngle()
+    {
+        return shoulder.getCurrentPosition() / 28.444;
+    }
+
+    private double getWristAngle()
+    {
+        return ((wrist.getPosition() - 0.64) / 0.36) * 75;
+    }
+
+    private void setWristAngle(double angle)
+    {
+        wrist.setPosition((0.36) * (angle / -75) + 0.64);
+    }
+
+    public static int getMotorPosition(double angle)
+    {
+        return (int)(28.444 * angle);
+    }
+
+    public static double getShoulderPosFromAngle(int pos)
+    {
+        return (28.444) * pos;
+    }
+
+    public static int getShoulderAngleFromPos(double angle)
+    {
+        return (int)(angle / 28.444);
+    }
+
+    public static double getWristAngleFromPos(double pos)
+    {
+        return ((pos - 0.64) / 0.36) * 75;
+    }
+
+    public static double getWristPosFromAngle(double angle)
+    {
+        return ((0.36) * (angle / -75) + 0.64);
     }
 }

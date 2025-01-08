@@ -2,9 +2,8 @@ package org.firstinspires.ftc.teamcode.DeepDive;
 
 import android.util.Size;
 
-import java.util.*;
-
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -12,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -20,11 +18,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.KettleLibrary.PIDController;
 import org.firstinspires.ftc.teamcode.KettleLibrary.Vision;
 
+import java.util.Locale;
+
 // import org.firstinspires.ftc.teamcode.KettleLibrary.XyhVector;
 
 @Config
-@Autonomous(name = "Deep Auto v1.3.5")
-public class DeepAuto extends LinearOpMode
+@Autonomous(name = "Deep Auto v2.0.0")
+public class DeepAutov2 extends LinearOpMode
 {
     public enum AutoState
     {
@@ -34,16 +34,13 @@ public class DeepAuto extends LinearOpMode
         ExtendArm,
         ReleaseArm,
         Park,
-        TouchBar,
         End;
-    }
 
-    public enum TouchBarSubStage
-    {
-        MoveBackLeft,
-        MoveForward,
-        MoveRight,
-        MoveArm,
+        public AutoState next()
+        {
+            if (this == End) return End;
+            return AutoState.values()[(this.ordinal() + 1)];
+        }
     }
 
     public static class PoseMath
@@ -78,8 +75,6 @@ public class DeepAuto extends LinearOpMode
     SparkFunOTOS odo;
 
     AutoState state;
-    TouchBarSubStage touchBarState;
-
 
     double oldTime = 0;
     double xOffset = 26; //  152 is Testing Robot offset
@@ -99,8 +94,6 @@ public class DeepAuto extends LinearOpMode
     PIDController tricepPID;
 
     Vision vision;
-
-    boolean bar;
 
     SparkFunOTOS.Pose2D targetPosition;
 
@@ -175,8 +168,6 @@ public class DeepAuto extends LinearOpMode
 
         state = AutoState.Start;
 
-        bar = false;
-
         double wristPosForShoulderTarget = DeepDrive.getWristPosFromAngle(-(DeepDrive.getShoulderAngleFromPos(shoulderClipTarget) - 45.0)) + 0.1;
         telemetry.addData("wristPos", wristPosForShoulderTarget + "");
         telemetry.update();
@@ -190,11 +181,14 @@ public class DeepAuto extends LinearOpMode
 
         // play
         waitForStart();
+        ElapsedTime timer = new ElapsedTime();
+
         if (opModeIsActive())
         {
             while (opModeIsActive())
             {
                 telemetry.addData("State", state);
+                telemetry.addData("time", timer.seconds());
                 switch (state)
                 {
                     case Start:
@@ -269,14 +263,14 @@ public class DeepAuto extends LinearOpMode
                         {
                             shoulder.setPower(0); // stop action
                             
-                            if (bar)
-                            {
-                                state = AutoState.TouchBar; // advance state
-                                touchBarState = TouchBarSubStage.MoveBackLeft;
-                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-268.0, 907.0, 0.0));
-                                // prepare the robot for moving to touch bar
-                            }
-                            else
+//                            if (bar)
+//                            {
+//                                state = AutoState.TouchBar; // advance state
+//                                touchBarState = TouchBarSubStage.MoveBackLeft;
+//                                targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-268.0, 907.0, 0.0));
+//                                // prepare the robot for moving to touch bar
+//                            }
+//                            else
                             {
                                 state = AutoState.Park; // advance state
                                 targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(-800.0, -1732.0, 0.0));
@@ -305,77 +299,6 @@ public class DeepAuto extends LinearOpMode
                             state = AutoState.End;
                         }
 
-                        break;
-                    }
-                    case TouchBar:
-                    {
-                        // move the robot to touch the bar
-                        odometry();
-
-                        switch (touchBarState)
-                        {
-                            case MoveBackLeft:
-                            {
-                                goToPosition(targetPosition, 0.75);
-
-                                if (PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax)
-                                {
-                                    for (DcMotor wheel : wheels)
-                                    {
-                                        wheel.setPower(0);
-                                    }
-                                    touchBarState = TouchBarSubStage.MoveForward;
-                                    targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(635.0, 0.0, 0.0));
-                                }
-                                break;   
-                            }
-                            case MoveForward:
-                            {
-                                goToPosition(targetPosition, 0.75);
-
-                                if (PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax)
-                                {
-                                    for (DcMotor wheel : wheels)
-                                    {
-                                        wheel.setPower(0);
-                                    }
-                                    touchBarState = TouchBarSubStage.MoveRight;
-                                    targetPosition = PoseMath.add(odo.getPosition(), new SparkFunOTOS.Pose2D(0.0, 528.0, 0.0));
-                                }                                
-                                break;
-                            }
-                            case MoveRight:
-                            {
-                                goToPosition(targetPosition, 0.75);
-
-                                if (PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax)
-                                {
-                                    for (DcMotor wheel : wheels)
-                                    {
-                                        wheel.setPower(0);
-                                    }
-                                    touchBarState = TouchBarSubStage.MoveArm;
-                                }
-                                break;
-                            }
-                            case MoveArm:
-                            {
-                                int armTarget = -1000;
-                                int shoulderErr = shoulder.getCurrentPosition() - armTarget;
-
-                                if (Math.abs(shoulderErr) < motorErrorMax) // end condition
-                                {
-                                    shoulder.setPower(0); // stop action
-                                    state = AutoState.End;
-                                }
-                                else
-                                {
-                                    double cbrtErr = Math.cbrt(shoulderErr);
-                                    shoulder.setPower(shoulderPID.update(cbrtErr)); // sub-state action
-                                }
-                                break;
-                            }
-                        }
                         break;
                     }
                     case End:
