@@ -10,6 +10,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.KettleLibrary.ColorBrickColor;
+
 import java.lang.Math;
 
 @Config
@@ -34,6 +37,8 @@ public class DeepDrive extends LinearOpMode
     Servo elevatorLeft;
     double wristPos = 0.0;
 
+    Servo colorBrick;
+
     public static int testvar = 100;
 
 //    WebcamName webcam; // this will be used when a camera is (eventually) attached to the robot
@@ -56,6 +61,7 @@ public class DeepDrive extends LinearOpMode
         light = hardwareMap.get(Servo.class, "light");
 
         colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
+        SampleIdentifier sampleIdentifier = new SampleIdentifier(colorSensor);
 
         // the wheels should stop, but not resist outside forces
         frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -66,6 +72,8 @@ public class DeepDrive extends LinearOpMode
         // these motors should hold their positions, resisting forces
         shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         tricep.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        colorBrick = hardwareMap.get(Servo.class, "light");
 
         // set reversals
 //        backright.setDirection(DcMotor.Direction.REVERSE);
@@ -238,70 +246,68 @@ public class DeepDrive extends LinearOpMode
                 backright.setPower(((ly - lx) * power) -  (rx * Math.abs(power)));
 
 
+                if (colorSensor.getDistance(DistanceUnit.MM) < 60)
+                {
+                    SampleIdentifier.Color seenColor = sampleIdentifier.getColor();
 
+                    double redMag = (SampleIdentifier.Color.red.subtract(seenColor)).magnitude();
+                    double yellowMag = (SampleIdentifier.Color.yellow.subtract(seenColor)).magnitude();
+                    double blueMag = (SampleIdentifier.Color.blue.subtract(seenColor)).magnitude();
+
+                    double minMag = Math.min(Math.min(redMag, blueMag), yellowMag);
+
+                    if (minMag == redMag)
+                    {
+                        ColorBrickColor.Red.setColorBrick(colorBrick);
+                    }
+                    else if (minMag == blueMag)
+                    {
+                        ColorBrickColor.Blue.setColorBrick(colorBrick);
+                    }
+                    else if (minMag == yellowMag)
+                    {
+                        ColorBrickColor.Yellow.setColorBrick(colorBrick);
+                    }
+                    else
+                    {
+                        ColorBrickColor.Off.setColorBrick(colorBrick);
+                    }
+                }
+                else
+                {
+                    ColorBrickColor.Off.setColorBrick(colorBrick);
+                }
 
 
                 // the ARM!
-                boolean frontArm = shoulder.getCurrentPosition() > -3558;
-                boolean overridden = armer.left_bumper;
-                int maxExt = 0;
-                
-                if (frontArm)
+                boolean frontArm = shoulder.getCurrentPosition() < 3160;
+
+                if (armer.dpad_down)
                 {
-                    maxExt = -600;
+                    shoulder.setPower(-armPowers[j]); // rotate down
                 }
-                if (Math.abs(shoulder.getCurrentPosition() + 3558) < 300)
+                else if (armer.dpad_up)
                 {
-                    maxExt = -3638;
+                        shoulder.setPower(armPowers[j]); // rotate up
+                }
+                else
+                {
+                    shoulder.setPower(0); // no button is pressed, stop
                 }
 
-                if (!overridden) // override key not pressed
-                {
-                    if (armer.dpad_down)
-                    {
-                        shoulder.setPower(-armPowers[j]); // rotate down
-                    }
-                    else if (armer.dpad_up)
-                    {
-                        if (true) // removed max rotation
-                        {
-                            shoulder.setPower(armPowers[j]); // rotate up
-                        }
-                        else // this would trigger if a max rotation were implemented
-                        {
-                            armer.rumble(100);
-                            shoulder.setPower(0);
-                        }
-                    }
-                    else
-                    {
-                        shoulder.setPower(0); // no button is pressed, stop
-                    }
-                }
 
-                // the tricep
-                if (armer.dpad_left)
+                if (armer.dpad_right && armer.left_trigger > 0.4)
+                {
+                    tricep.setPower(-1); // extend
+                }
+                else if (armer.dpad_left)
                 {
                     tricep.setPower(1); // retract
-                }
-                else if (armer.dpad_right)
-                {
-                    if (tricep.getCurrentPosition() > maxExt || overridden)
-                    {
-                        tricep.setPower(-1); // extend
-                    }
-                    else
-                    {
-                        armer.rumble(100);
-                        tricep.setPower(0);
-                    }
                 }
                 else
                 {
                     tricep.setPower(0); // no button is pressed, stop
                 }
-
-                telemetry.addData("can extend", tricep.getCurrentPosition() > maxExt);
 
                 if (armer.left_bumper)
                 {
@@ -315,14 +321,15 @@ public class DeepDrive extends LinearOpMode
                 // setting the position for the claws and wrist
                 if (!frontArm)
                 {
-                    wrist.setPosition(0.66);
+                    wrist.setPosition(HandValues.WristMode.Folded.position);
+                    hand.setPosition(HandValues.ClawMode.Clippy.position);
                 }
                 else
                 {
 //                    hand.setPosition(0.25 * (1 - armer.right_trigger));
                     hand.setPosition(clawMode.position + (clawMode.openOffset * armer.right_trigger));
 
-                    if (armer.right_bumper && clawMode == HandValues.ClawMode.Clippy && Math.abs(getShoulderAngle()) < 10)
+                    if (armer.right_bumper && clawMode == HandValues.ClawMode.Clippy && Math.abs(getShoulderAngle()) < 30)
                     {
                         setWristAngle(-90.0);
                     }
@@ -330,13 +337,6 @@ public class DeepDrive extends LinearOpMode
                     {
                         setWristAngle(-getShoulderAngle());
                     }
-
-//                    if (Math.abs(armer.right_stick_y) > deadzone)
-//                    {
-//                        wristPos += 0.0025 * armer.right_stick_y;
-//                    }
-//                    wrist.setPosition(wristPos);
-//                    wristPos = Math.max(Math.min(wrist.getPosition(), 1), 0.28);
                 }
 
 

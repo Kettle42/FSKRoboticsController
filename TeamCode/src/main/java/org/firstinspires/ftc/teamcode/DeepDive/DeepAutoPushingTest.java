@@ -23,18 +23,15 @@ import java.util.Locale;
 // import org.firstinspires.ftc.teamcode.KettleLibrary.XyhVector;
 
 @Config
-@Autonomous(name = "DeepAuto v2.0.1")
-public class DeepAutov2 extends LinearOpMode
+@Autonomous(name = "Deep Auto Pushing Test")
+public class DeepAutoPushingTest extends LinearOpMode
 {
     public enum AutoState
     {
-        Start,
-        RaiseArm,
-        ApproachBar,
-        ReleaseArm,
         MoveBackRight,
         TowardsSamples,
         BehindSampleOne,
+        Turning,
         PushingSamples,
         Park,
         End;
@@ -114,21 +111,18 @@ public class DeepAutov2 extends LinearOpMode
             new OurPose2D(DistanceUnit.INCH, -72.0, -48.0, AngleUnit.DEGREES, 180.0)};   */
 
     // static variables are able to be changed by the dashboard
-    public static int shoulderClipTarget = 2460;
-    public static int shoulderReleaseTarget = 2000;
-    public static int motorErrorMax = 28;
-    public static double posErrorMax = 10.0;
-//    public static double angleErrorMax = 5.0;
-    public static double forwardFromStart = 790.0;
-    public static double wheelPower = 0.5;
-//    public static double pidCoeffs = 0.100;
-    public static int endArmPos = 1210;
+    public static int shoulderClipTarget = 2500;
+    public static int shoulderReleaseTarget = 1800;
+    public static int motorErrorMax = 5;
+    public static double posErrorMax = 4.0;
+    public static double angleErrorMax = 5.0;
+    public static double forwardFromStart = 815.0;
 
-    public static double behindSamples = 450;
-    public static double inZone = -450;
+    public static double behindSamples = 500;
+    public static double inZone = -750;
     public static double firstSample = -1100;
     public static double secondSample = -1300;
-    public static double thirdSample = -1470;
+    public static double thirdSample = -1450;
     public static double rightAtStart = -800;
 
     public void runOpMode()
@@ -145,8 +139,8 @@ public class DeepAutov2 extends LinearOpMode
         wrist = hardwareMap.get(Servo.class, "wrist");
         hand = hardwareMap.get(Servo.class, "hand");
 
-//        Vision.CameraOffset cameraOffset = new Vision.CameraOffset(0.0, 153.0, 59.0, 0.0, -90.0, -90.0);
-//        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"), Vision.LensIntrinsics.LogitechC270, cameraOffset, new Size(640, 480));
+        Vision.CameraOffset cameraOffset = new Vision.CameraOffset(0.0, 153.0, 59.0, 0.0, -90.0, -90.0);
+        vision = new Vision(hardwareMap.get(WebcamName.class, "Webcam 1"), Vision.LensIntrinsics.LogitechC270, cameraOffset, new Size(640, 480));
 
         odo = hardwareMap.get(SparkFunOTOS.class, "sensor_otos");
         configureOtos();
@@ -174,7 +168,7 @@ public class DeepAutov2 extends LinearOpMode
         backleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
 
-        state = AutoState.Start;
+        state = AutoState.MoveBackRight;
 
         DcMotor[] wheels = new DcMotor[] {frontleft, frontright, backleft, backright};
 
@@ -191,8 +185,7 @@ public class DeepAutov2 extends LinearOpMode
         telemetry.addData("wristPos", wristPosForShoulderTarget + "");
         telemetry.update();
 
-        targetPosition = new SparkFunOTOS.Pose2D(0,0,0);
-
+        targetPosition = PoseMath.constructAdjusted(-304.8, rightAtStart, 0.0);
 //        if (opModeInInit()) {
 //            while (opModeInInit()) {
 //                odometry();
@@ -202,15 +195,15 @@ public class DeepAutov2 extends LinearOpMode
         int pushingIterations = 0;
 
         pushingPositions = new SparkFunOTOS.Pose2D[]
-        {
-            PoseMath.constructAdjusted(inZone, firstSample, 180),
-            PoseMath.constructAdjusted(behindSamples, firstSample, 180),
-            PoseMath.constructAdjusted(behindSamples, secondSample, 180),
-            PoseMath.constructAdjusted(inZone, secondSample, 180),
-            PoseMath.constructAdjusted(behindSamples, secondSample, 180),
-            PoseMath.constructAdjusted(behindSamples, thirdSample, 180),
-            PoseMath.constructAdjusted(inZone, thirdSample, 180)
-        };
+                {
+                        PoseMath.constructAdjusted(inZone, firstSample, 180),
+                        PoseMath.constructAdjusted(behindSamples, firstSample, 180),
+                        PoseMath.constructAdjusted(behindSamples, secondSample, 180),
+                        PoseMath.constructAdjusted(inZone, secondSample, 180),
+                        PoseMath.constructAdjusted(behindSamples, secondSample, 180),
+                        PoseMath.constructAdjusted(behindSamples, thirdSample, 180),
+                        PoseMath.constructAdjusted(inZone, thirdSample, 180)
+                };
 
 
         // play
@@ -225,75 +218,10 @@ public class DeepAutov2 extends LinearOpMode
                 telemetry.addData("time", timer.seconds());
                 switch (state)
                 {
-                    case Start:
-                    {
-                        wrist.setPosition(wristPosForShoulderTarget);
-                        state = AutoState.RaiseArm;
-                        break;
-                    }
-                    case RaiseArm:
-                    {
-                        // get the arm into position so that the specimen can be hooked
-                        int shoulderErr = shoulderClipTarget - shoulder.getCurrentPosition();
-                        telemetry.addData("Shoulder Error", shoulderErr);
-                        if (Math.abs(shoulderErr) < motorErrorMax) {
-                            shoulder.setPower(0);
-                            targetPosition = new SparkFunOTOS.Pose2D(forwardFromStart, 0.0, 0.0);
-                            state = AutoState.ApproachBar;
-                        } else {
-                            double cbrtErr = Math.cbrt(shoulderErr);
-                            shoulder.setPower(shoulderPID.update(cbrtErr));
-                        }
-                        break;
-                    }
-                    case ApproachBar:
-                    {
-                        // drive towards the bar to hook the specimen
-                        odometry();
-                        wrist.setPosition(wristPosForShoulderTarget);
-                        hand.setPosition(HandValues.ClawMode.Clippy.position);
-                        // SparkFunOTOS.Pose2D position = new SparkFunOTOS.Pose2D(targetX, 0, 0.0);
-                        goToPosition(targetPosition, wheelPower); // state action
-                        // telemetry.addData("X", position.x);
-
-                        if (DeepAuto.PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
-                        {
-                            for (DcMotor wheel : wheels) {
-                                wheel.setPower(0); // stop state action
-                            }
-                            state = AutoState.ReleaseArm;
-                            // change next state based on whether or not we want to park or touch bar
-                        }
-                        break;
-                    }
-                    case ReleaseArm:
-                    {
-                        hand.setPosition(HandValues.ClawMode.Clippy.position + HandValues.ClawMode.Clippy.openOffset);
-
-                        telemetry.addData("Arm Pos", shoulder.getCurrentPosition());
-
-                        int shoulderErr = shoulderReleaseTarget - shoulder.getCurrentPosition();
-                        if (Math.abs(shoulderErr) < motorErrorMax)
-                        {
-                            shoulder.setPower(0); // stop action
-                            odo.setPosition(new SparkFunOTOS.Pose2D(0, 0, -90));
-                            targetPosition = PoseMath.constructAdjusted(-304.8, rightAtStart, 0.0);
-                            state = AutoState.MoveBackRight;
-                            // prepare the robot for movement to corner
-                        }
-                        else
-                        {
-                            double cbrtErr = Math.cbrt(shoulderErr);
-                            shoulder.setPower(shoulderPID.update(cbrtErr));
-                        }
-                        break;
-                    }
-
-                    // pushing
                     case MoveBackRight:
                     {
                         // target position has been set to not 0,0,0
-                        goToPosition(targetPosition, wheelPower);
+                        goToPosition(targetPosition, 0.5);
                         if (DeepAutoPushingTest.PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
                         {
                             for (DcMotor wheel : wheels) {
@@ -307,8 +235,7 @@ public class DeepAutov2 extends LinearOpMode
                     }
                     case TowardsSamples:
                     {
-                        goToPosition(targetPosition, wheelPower);
-                        wrist.setPosition(HandValues.WristMode.Folded.position);
+                        goToPosition(targetPosition, 0.5);
                         if (DeepAutoPushingTest.PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
                         {
                             for (DcMotor wheel : wheels) {
@@ -322,22 +249,40 @@ public class DeepAutov2 extends LinearOpMode
                     }
                     case BehindSampleOne:
                     {
-                        goToPosition(targetPosition, wheelPower);
+                        goToPosition(targetPosition, 0.5);
                         if (DeepAutoPushingTest.PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
                         {
                             for (DcMotor wheel : wheels) {
                                 wheel.setPower(0); // stop state action
                             }
-                            shoulderPID.integralSum = 0.0;
                             state = AutoState.PushingSamples;
                             // change next state based on whether or not we want to park or touch bar{
                         }
                         break;
                     }
+//                    case Turning:
+//                    {
+//                        SparkFunOTOS.Pose2D newPos =
+//                                new SparkFunOTOS.Pose2D(targetPosition.x, targetPosition.y, 90);
+//
+//                        goToPosition(newPos);
+//
+//                        if (Math.abs(odo.getPosition().h - targetPosition.h) < angleErrorMax)
+//                        {
+//                            for (DcMotor wheel : wheels)
+//                            {
+//                                wheel.setPower(0);
+//                            }
+//
+//                            state = AutoState.PushingSamples;
+//                        }
+//
+//                        break;
+//                    }
                     case PushingSamples:
                     {
                         targetPosition = pushingPositions[pushingIterations];
-                        goToPosition(targetPosition, wheelPower);
+                        goToPosition(targetPosition, 0.5);
                         if (DeepAutoPushingTest.PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
                         {
                             for (DcMotor wheel : wheels) {
@@ -353,12 +298,6 @@ public class DeepAutov2 extends LinearOpMode
                     }
                     case Park:
                     {
-                        for (DcMotor wheel : wheels)
-                        {
-                            wheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-                            wheel.setPower(0);
-                            wheel.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                        }
                         state = AutoState.End;
                         break;
                     }
@@ -368,24 +307,6 @@ public class DeepAutov2 extends LinearOpMode
                         break;
                     }
                 }
-
-                if (state.ordinal() >= AutoState.PushingSamples.ordinal())
-                {
-                    telemetry.addData("shoulder pos", shoulder.getCurrentPosition());
-                    telemetry.addData("shoulder target", endArmPos);
-                    int shoulderErr = endArmPos - shoulder.getCurrentPosition();
-                    telemetry.addData("shoulder error", shoulderErr);
-
-                    if (Math.abs(shoulderErr) > motorErrorMax)
-                    {
-                        double cbrtErr = Math.cbrt(shoulderErr);
-                        shoulder.setPower(shoulderPID.update(cbrtErr));
-                    }
-
-                    wrist.setPosition(1.00);
-                    hand.setPosition(HandValues.ClawMode.Grabby.position);
-                }
-
                 telemetry.update();
             }
 
@@ -501,7 +422,7 @@ public class DeepAutov2 extends LinearOpMode
         odo.calibrateImu();
         odo.resetTracking();
 
-        SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, 0);
+        SparkFunOTOS.Pose2D currentPosition = new SparkFunOTOS.Pose2D(0, 0, -90);
         odo.setPosition(currentPosition);
 
         telemetry.addLine("OTOS configured! Press start to get position data!");

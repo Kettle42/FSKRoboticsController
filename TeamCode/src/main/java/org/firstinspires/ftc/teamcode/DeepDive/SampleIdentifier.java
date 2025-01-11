@@ -13,6 +13,10 @@ public class SampleIdentifier
 {
     public static class Color
     {
+        public static final Color red = new Color(255, 0, 0);
+        public static final Color blue = new Color(0, 0, 255);
+        public static final Color yellow = new Color(255, 255, 0);
+
         public final int r;
         public final int g;
         public final int b;

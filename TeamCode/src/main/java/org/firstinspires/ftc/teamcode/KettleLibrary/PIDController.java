@@ -10,20 +10,13 @@ public class PIDController
     public double kp = 1;
     public double ki = 1;
     public double kd = 1;
-//    public double timeSave = 1;
     private final ElapsedTime timer;
     private double lastError = 0;
-//    private ArrayList<Double> times;
-//    private ArrayList<Double> errors;
-//    private boolean absoluteError = false;
-//    private static Function<Double, Double> func = a -> a;
 
     public PIDController(ElapsedTime timer)
     {
         timer.reset();
         this.timer = timer;
-//        this.times = new ArrayList<Double>();
-//        this.errors = new ArrayList<Double>();
     }
 
     public PIDController()
@@ -37,24 +30,6 @@ public class PIDController
     */
     public double update(double state, double reference)
     {
-//        double deltatime = this.timer.seconds();
-//        double error = reference - state;
-//
-//        this.integralSum += error * deltatime;
-//
-//        double derivative = (error - this.lastError) / (deltatime);
-//        this.lastError = error;
-//
-//        //log("deltaTime: " + deltatime + " seconds");
-//        timer.reset();
-//
-//        double output = (error * kp) + (derivative * kd) + (this.integralSum * ki);
-//        /*log("output: " + output);
-//        log("error: " + error);
-//        log("derivative: " + derivative);
-//        log("this.integralSum: " + this.integralSum);
-//        log("state, reference: " + state + " , " + reference);*/
-//        return output;
         return this.update(reference - state);
     }
 
@@ -71,15 +46,9 @@ public class PIDController
         double derivative = (error - this.lastError) / (deltatime);
         this.lastError = error;
 
-        //log("deltaTime: " + deltatime + " seconds");
         timer.reset();
 
         double output = (error * kp) + (derivative * kd) + (this.integralSum * ki);
-        /*log("output: " + output);
-        log("error: " + error);
-        log("derivative: " + derivative);
-        log("this.integralSum: " + this.integralSum);
-        log("state, reference: " + state + " , " + reference);*/
         return output;
     }
     

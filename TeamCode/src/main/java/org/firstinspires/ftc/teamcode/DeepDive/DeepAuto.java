@@ -116,7 +116,8 @@ public class DeepAuto extends LinearOpMode
     public static int shoulderReleaseTarget = 1800;
     public static int motorErrorMax = 5;
     public static double posErrorMax = 4.0;
-    public static double forwardFromStart = 815.0;
+    public static double forwardFromStart = 800.0;
+    public static double wheelPower = 0.75;
 
 
     public void runOpMode()
@@ -150,11 +151,11 @@ public class DeepAuto extends LinearOpMode
         shoulderPID = new PIDController(new ElapsedTime());
         tricepPID = new PIDController(new ElapsedTime());
 
-        xPosPID.setCoefficients(0.125, 0.0,0.0);
-        yPosPID.setCoefficients(0.125, 0.0,0.0);
-        hPosPID.setCoefficients(0.125, 0.0,0.0);
+        xPosPID.setCoefficients(0.085, 0.0,0.0);
+        yPosPID.setCoefficients(0.085, 0.0,0.0);
+        hPosPID.setCoefficients(0.085, 0.0,0.0);
 
-        shoulderPID.setCoefficients(0.25, 0.0, 0.0);
+        shoulderPID.setCoefficients(0.125, 0.0, 0.0);
 
         frontright.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         frontleft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -226,7 +227,7 @@ public class DeepAuto extends LinearOpMode
                         wrist.setPosition(wristPosForShoulderTarget);
                         hand.setPosition(HandValues.ClawMode.Clippy.position);
                         // SparkFunOTOS.Pose2D position = new SparkFunOTOS.Pose2D(targetX, 0, 0.0);
-                        goToPosition(targetPosition, 0.75); // state action
+                        goToPosition(targetPosition, wheelPower); // state action
                         // telemetry.addData("X", position.x);
 
                         if (PoseMath.distance(odo.getPosition(), targetPosition) < posErrorMax) // state end condition
@@ -490,11 +491,13 @@ public class DeepAuto extends LinearOpMode
         odo.setLinearUnit(DistanceUnit.MM);
         odo.setAngularUnit(AngleUnit.DEGREES);
 
-        SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(100.5, 0.0, 0.0);
+        SparkFunOTOS.Pose2D offset = new SparkFunOTOS.Pose2D(153.5, 0.0, 0.0);
         odo.setOffset(offset);
 
         odo.setLinearScalar((2438.4) / (2448.425));
         odo.setAngularScalar((4680.0) / (4701.7474));
+//        odo.setLinearScalar((2438.4) / (2373.6));
+//        odo.setAngularScalar((3600.0) / (3641.748));
 
         odo.calibrateImu();
         odo.resetTracking();
